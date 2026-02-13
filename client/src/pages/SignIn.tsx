@@ -1,6 +1,5 @@
-import googleIcon from "@/assets/icons/google.svg";
+import GoogleButton from "@/components/auth/GoogleButton";
 import SignInForm from "@/components/auth/SignInForm";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -13,10 +12,6 @@ import { Separator } from "@/components/ui/separator";
 import { useNavigate } from "react-router-dom";
 
 const SignIn = () => {
-  const handleGoogleSignIn = () => {
-    console.log("Google Sign In...");
-  };
-
   const navigate = useNavigate();
 
   return (
@@ -30,16 +25,8 @@ const SignIn = () => {
             Welcome back! Please enter your details.
           </CardDescription>
         </CardHeader>
-
         <CardContent className="grid gap-4">
-          <Button
-            variant="outline"
-            className="w-full gap-2"
-            onClick={handleGoogleSignIn}
-          >
-            <img src={googleIcon} alt="Google" className="h-5 w-5" />
-            Sign in with Google
-          </Button>
+          <GoogleButton label="Sign in with Google" />
 
           <div className="flex items-center gap-4">
             <Separator className="flex-1" />

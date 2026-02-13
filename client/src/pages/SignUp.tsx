@@ -1,6 +1,5 @@
-import googleIcon from "@/assets/icons/google.svg";
+import GoogleButton from "@/components/auth/GoogleButton";
 import SignUpForm from "@/components/auth/SignUpForm";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -13,10 +12,6 @@ import { Separator } from "@/components/ui/separator";
 import { useNavigate } from "react-router-dom";
 
 const SignUp = () => {
-  const handleGoogleSignUp = () => {
-    console.log("Google Sign Up...");
-  };
-
   const navigate = useNavigate();
 
   return (
@@ -30,14 +25,7 @@ const SignUp = () => {
         </CardHeader>
 
         <CardContent className="grid gap-4">
-          <Button
-            variant="outline"
-            className="w-full gap-2"
-            onClick={handleGoogleSignUp}
-          >
-            <img src={googleIcon} alt="Google" className="h-5 w-5" />
-            Sign up with Google
-          </Button>
+          <GoogleButton label="Sign up with Google" />
 
           <div className="flex items-center gap-4">
             <Separator className="flex-1" />

@@ -47,7 +47,13 @@ export class AuthService {
       const decodedToken = await admin
         .auth()
         .verifyIdToken(googleLoginDto.token);
-      const { email, uid } = decodedToken;
+      const { email, uid, name: googleName, picture: photo } = decodedToken;
+
+      const name = googleName ? googleName.split(' ')[0] : '';
+      const surname =
+        googleName && googleName.split(' ').length > 1
+          ? googleName.split(' ')[1]
+          : '';
 
       const userRef = admin.firestore().collection('users').doc(uid);
       const userSnap = await userRef.get();
@@ -55,6 +61,9 @@ export class AuthService {
       if (!userSnap.exists) {
         await userRef.set({
           email,
+          name,
+          surname,
+          photo: photo || null,
           createdAt: new Date().toISOString(),
         });
         console.log(`Created new user profile for ${email}`);
@@ -62,9 +71,19 @@ export class AuthService {
         console.log(`User ${email} already exists. Logging in...`);
       }
 
+      const userData = userSnap.exists
+        ? userSnap.data()
+        : { name, surname, photo };
+
       return {
         message: 'Google auth successful',
-        user: { email, uid },
+        user: {
+          email,
+          uid,
+          name: userData?.name,
+          surname: userData?.surname,
+          photo: userData?.photo,
+        },
       };
     } catch (error) {
       throw new BadRequestException(error.message);
@@ -74,21 +93,42 @@ export class AuthService {
   async signIn(signInDto: SignInDto) {
     try {
       const decodedToken = await admin.auth().verifyIdToken(signInDto.token);
-      const { email, uid } = decodedToken;
+      const { email, uid, name: googleName, picture: photo } = decodedToken;
 
-      const userDoc = await admin
-        .firestore()
-        .collection('users')
-        .doc(uid)
-        .get();
+      const userRef = admin.firestore().collection('users').doc(uid);
+      const userSnap = await userRef.get();
 
-      if (!userDoc.exists) {
-        throw new BadRequestException('User not found');
+      let userData;
+
+      if (!userSnap.exists) {
+        const name = googleName ? googleName.split(' ')[0] : '';
+        const surname =
+          googleName && googleName.split(' ').length > 1
+            ? googleName.split(' ')[1]
+            : '';
+
+        userData = {
+          email,
+          name,
+          surname,
+          photo: photo || null,
+          createdAt: new Date().toISOString(),
+        };
+
+        await userRef.set(userData);
+      } else {
+        userData = userSnap.data();
       }
 
       return {
         message: 'Sign in successful',
-        user: { email, uid },
+        user: {
+          email,
+          uid,
+          name: userData?.name,
+          surname: userData?.surname,
+          photo: userData?.photo,
+        },
       };
     } catch (error) {
       throw new BadRequestException('Invalid token');

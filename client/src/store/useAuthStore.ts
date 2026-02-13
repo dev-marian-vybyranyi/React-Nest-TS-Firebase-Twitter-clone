@@ -1,7 +1,7 @@
 import { api } from "@/api/axios";
-import { auth } from "@/firebase";
+import { auth, googleProvider } from "@/firebase";
 import type { SignUpFormValues, SignInFormValues, User } from "@/types/auth";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { create } from "zustand";
 
 interface AuthState {
@@ -13,6 +13,7 @@ interface AuthState {
   signUp: (data: SignUpFormValues) => Promise<void>;
   signIn: (data: SignInFormValues) => Promise<void>;
   signOut: () => Promise<void>;
+  googleSignIn: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -98,6 +99,36 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ user: null, isLoading: false });
     } catch (error: any) {
       set({ error: error.message, isLoading: false });
+    }
+  },
+
+  googleSignIn: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const userCredential = await signInWithPopup(auth, googleProvider);
+      const token = await userCredential.user.getIdToken();
+
+      const { data } = await api.post("/auth/google", { token });
+
+      set({
+        user: {
+          uid: userCredential.user.uid,
+          email: userCredential.user.email as string,
+          name: data.user.name,
+          surname: data.user.surname,
+          photo: data.user.photo,
+        },
+        isLoading: false,
+      });
+    } catch (error: any) {
+      const message =
+        error.response?.data?.message ||
+        "Google Sign-In failed. Please try again.";
+      set({
+        error: Array.isArray(message) ? message[0] : message,
+        isLoading: false,
+      });
+      throw error;
     }
   },
 }));
