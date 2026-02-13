@@ -1,5 +1,5 @@
 import googleIcon from "@/assets/icons/google.svg";
-import SignInForm from "@/components/auth/SignInForm";
+import SignUpForm from "@/components/auth/SignUpForm";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,9 +11,9 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
-export const SignIn = () => {
-  const handleGoogleSignIn = () => {
-    console.log("Google Sign In...");
+const SignUp = () => {
+  const handleGoogleSignUp = () => {
+    console.log("Google Sign Up...");
   };
 
   return (
@@ -21,10 +21,10 @@ export const SignIn = () => {
       <Card className="w-[380px] shadow-lg bg-white">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">
-            Sign in to Twitter
+            Sign up to Twitter
           </CardTitle>
           <CardDescription>
-            Welcome back! Please enter your details.
+            Welcome! Please enter your details.
           </CardDescription>
         </CardHeader>
 
@@ -32,10 +32,10 @@ export const SignIn = () => {
           <Button
             variant="outline"
             className="w-full gap-2"
-            onClick={handleGoogleSignIn}
+            onClick={handleGoogleSignUp}
           >
             <img src={googleIcon} alt="Google" className="h-5 w-5" />
-            Sign in with Google
+            Sign up with Google
           </Button>
 
           <div className="flex items-center gap-4">
@@ -44,14 +44,14 @@ export const SignIn = () => {
             <Separator className="flex-1" />
           </div>
 
-          <SignInForm />
+          <SignUpForm />
         </CardContent>
 
         <CardFooter className="flex justify-center">
           <p className="text-sm text-muted-foreground">
-            Don't have an account?{" "}
+            Already have an account?{" "}
             <a href="#" className="text-blue-500 hover:underline">
-              Sign up
+              Sign in
             </a>
           </p>
         </CardFooter>
@@ -59,3 +59,5 @@ export const SignIn = () => {
     </div>
   );
 };
+
+export default SignUp;

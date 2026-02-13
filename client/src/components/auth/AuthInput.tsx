@@ -13,7 +13,7 @@ interface AuthInputProps {
   className?: string;
 }
 
-export const AuthInput = ({
+const AuthInput = ({
   label,
   icon: Icon,
   className,
@@ -46,3 +46,5 @@ export const AuthInput = ({
     </div>
   );
 };
+
+export default AuthInput;

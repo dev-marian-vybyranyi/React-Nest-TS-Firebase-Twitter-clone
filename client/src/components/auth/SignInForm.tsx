@@ -3,9 +3,9 @@ import { SignInSchema } from "@/schemas/auth";
 import type { SignInFormValues } from "@/types/auth";
 import { Form, Formik } from "formik";
 import { KeyRound, Mail } from "lucide-react";
-import { AuthInput } from "./AuthInput";
+import AuthInput from "./AuthInput";
 
-export const SignInForm = () => {
+const SignInForm = () => {
   const initialValues: SignInFormValues = {
     email: "",
     password: "",
@@ -46,3 +46,5 @@ export const SignInForm = () => {
     </Formik>
   );
 };
+
+export default SignInForm;
