@@ -1,6 +1,6 @@
 import { api } from "@/api/axios";
 import { auth } from "@/firebase";
-import type { SignUpFormValues, User } from "@/types/auth";
+import type { SignUpFormValues, SignInFormValues, User } from "@/types/auth";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { create } from "zustand";
 
@@ -11,6 +11,7 @@ interface AuthState {
   setUser: (user: User | null) => void;
   setLoading: (loading: boolean) => void;
   signUp: (data: SignUpFormValues) => Promise<void>;
+  signIn: (data: SignInFormValues) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -47,6 +48,41 @@ export const useAuthStore = create<AuthState>((set) => ({
     } catch (error: any) {
       const message =
         error.response?.data?.message || "Signup failed. Please try again.";
+      set({
+        error: Array.isArray(message) ? message[0] : message,
+        isLoading: false,
+      });
+      throw error;
+    }
+  },
+
+  signIn: async (signInData: SignInFormValues) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        signInData.email,
+        signInData.password,
+      );
+
+      const token = await userCredential.user.getIdToken();
+
+      const { data } = await api.post("/auth/signin", { token });
+
+      set({
+        user: {
+          uid: userCredential.user.uid,
+          email: userCredential.user.email as string,
+          name: data.user.name || "",
+          surname: data.user.surname || "",
+          photo: data.user.photo || userCredential.user.photoURL || undefined,
+        },
+        isLoading: false,
+      });
+    } catch (error: any) {
+      const message =
+        error.response?.data?.message || "Signin failed. Please try again.";
       set({
         error: Array.isArray(message) ? message[0] : message,
         isLoading: false,

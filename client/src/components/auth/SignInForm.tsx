@@ -1,8 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { SignInSchema } from "@/schemas/auth";
+import { useAuthStore } from "@/store/useAuthStore";
 import type { SignInFormValues } from "@/types/auth";
 import { Form, Formik } from "formik";
 import { KeyRound, Mail } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import AuthInput from "./AuthInput";
 
 const SignInForm = () => {
@@ -11,12 +13,16 @@ const SignInForm = () => {
     password: "",
   };
 
+  const { signIn, isLoading, error } = useAuthStore();
+  const navigate = useNavigate();
+
   return (
     <Formik
       initialValues={initialValues}
       validationSchema={SignInSchema}
-      onSubmit={(values) => {
-        console.log("Email Login...", values);
+      onSubmit={async (values) => {
+        await signIn(values);
+        navigate("/");
       }}
     >
       <Form className="grid gap-4">
@@ -39,9 +45,13 @@ const SignInForm = () => {
         <Button
           type="submit"
           className="w-full bg-black hover:bg-gray-800 text-white"
+          disabled={isLoading}
         >
-          Sign In
+          {isLoading ? "Signing in..." : "Sign In"}
         </Button>
+        {error && (
+          <div className="text-red-500 text-sm text-center">{error}</div>
+        )}
       </Form>
     </Formik>
   );
