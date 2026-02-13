@@ -10,11 +10,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { useNavigate } from "react-router-dom";
 
 const SignUp = () => {
   const handleGoogleSignUp = () => {
     console.log("Google Sign Up...");
   };
+
+  const navigate = useNavigate();
 
   return (
     <div className="flex h-screen w-screen items-center justify-center bg-slate-100">
@@ -23,9 +26,7 @@ const SignUp = () => {
           <CardTitle className="text-2xl font-bold">
             Sign up to Twitter
           </CardTitle>
-          <CardDescription>
-            Welcome! Please enter your details.
-          </CardDescription>
+          <CardDescription>Welcome! Please enter your details.</CardDescription>
         </CardHeader>
 
         <CardContent className="grid gap-4">
@@ -50,7 +51,10 @@ const SignUp = () => {
         <CardFooter className="flex justify-center">
           <p className="text-sm text-muted-foreground">
             Already have an account?{" "}
-            <a href="#" className="text-blue-500 hover:underline">
+            <a
+              className="text-blue-500 hover:underline cursor-pointer"
+              onClick={() => navigate("/sign-in")}
+            >
               Sign in
             </a>
           </p>

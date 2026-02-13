@@ -10,11 +10,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { useNavigate } from "react-router-dom";
 
-export const SignIn = () => {
+const SignIn = () => {
   const handleGoogleSignIn = () => {
     console.log("Google Sign In...");
   };
+
+  const navigate = useNavigate();
 
   return (
     <div className="flex h-screen w-screen items-center justify-center bg-slate-100">
@@ -50,7 +53,10 @@ export const SignIn = () => {
         <CardFooter className="flex justify-center">
           <p className="text-sm text-muted-foreground">
             Don't have an account?{" "}
-            <a href="#" className="text-blue-500 hover:underline">
+            <a
+              className="text-blue-500 hover:underline cursor-pointer"
+              onClick={() => navigate("/sign-up")}
+            >
               Sign up
             </a>
           </p>
@@ -59,3 +65,5 @@ export const SignIn = () => {
     </div>
   );
 };
+
+export default SignIn;
