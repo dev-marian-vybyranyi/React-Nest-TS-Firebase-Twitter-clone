@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import * as admin from 'firebase-admin';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
+import { SignInDto } from './dto/signIn.dto';
 
 @Injectable()
 export class AuthService {
@@ -67,6 +68,29 @@ export class AuthService {
       };
     } catch (error) {
       throw new BadRequestException(error.message);
+    }
+  }
+
+  async signIn(signInDto: SignInDto) {
+    try {
+      const decodedToken = await admin.auth().verifyIdToken(signInDto.token);
+
+      const userDoc = await admin
+        .firestore()
+        .collection('users')
+        .doc(decodedToken.uid)
+        .get();
+
+      if (!userDoc.exists) {
+        throw new BadRequestException('User not found');
+      }
+
+      return {
+        message: 'Sign in successful',
+        user: { email: decodedToken.email, uid: decodedToken.uid },
+      };
+    } catch (error) {
+      throw new BadRequestException('Invalid token');
     }
   }
 }
