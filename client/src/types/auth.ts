@@ -10,3 +10,11 @@ export interface SignInFormValues {
   email: string;
   password: string;
 }
+
+export interface User {
+  uid: string;
+  email: string;
+  name?: string;
+  surname?: string;
+  photo?: string;
+}

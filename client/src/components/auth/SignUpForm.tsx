@@ -1,9 +1,11 @@
+import { useAuthStore } from "@/store/useAuthStore";
 import { SignUpSchema } from "@/schemas/auth";
 import type { SignUpFormValues } from "@/types/auth";
 import { Form, Formik } from "formik";
 import { KeyRound, Mail, User } from "lucide-react";
 import AuthInput from "./AuthInput";
 import { Button } from "../ui/button";
+import { useNavigate } from "react-router-dom";
 
 const SignUpForm = () => {
   const initialValues: SignUpFormValues = {
@@ -14,12 +16,16 @@ const SignUpForm = () => {
     confirmPassword: "",
   };
 
+  const { signUp, isLoading, error } = useAuthStore();
+  const navigate = useNavigate();
+
   return (
     <Formik
       initialValues={initialValues}
       validationSchema={SignUpSchema}
-      onSubmit={(values) => {
-        console.log(values);
+      onSubmit={async (values) => {
+        await signUp(values);
+        navigate("/");
       }}
     >
       <Form className="grid gap-4">
@@ -61,9 +67,13 @@ const SignUpForm = () => {
         <Button
           type="submit"
           className="w-full bg-black hover:bg-gray-800 text-white"
+          disabled={isLoading}
         >
-          Sign Up
+          {isLoading ? "Signing up..." : "Sign Up"}
         </Button>
+        {error && (
+          <div className="text-red-500 text-sm text-center">{error}</div>
+        )}
       </Form>
     </Formik>
   );
