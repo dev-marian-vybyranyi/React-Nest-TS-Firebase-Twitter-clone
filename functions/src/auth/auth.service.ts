@@ -74,11 +74,12 @@ export class AuthService {
   async signIn(signInDto: SignInDto) {
     try {
       const decodedToken = await admin.auth().verifyIdToken(signInDto.token);
+      const { email, uid } = decodedToken;
 
       const userDoc = await admin
         .firestore()
         .collection('users')
-        .doc(decodedToken.uid)
+        .doc(uid)
         .get();
 
       if (!userDoc.exists) {
@@ -87,7 +88,7 @@ export class AuthService {
 
       return {
         message: 'Sign in successful',
-        user: { email: decodedToken.email, uid: decodedToken.uid },
+        user: { email, uid },
       };
     } catch (error) {
       throw new BadRequestException('Invalid token');

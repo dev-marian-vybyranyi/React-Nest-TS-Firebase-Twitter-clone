@@ -9,7 +9,7 @@ import SignUp from "./pages/SignUp";
 import { useAuthStore } from "./store/useAuthStore";
 
 function App() {
-  const { isLoading, user, setUser, setLoading } = useAuthStore();
+  const { isLoading, setUser, setLoading } = useAuthStore();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -41,17 +41,11 @@ function App() {
     );
   }
   return (
-    <>
-      <div className="App">
-        {user ? <div>Привіт, {user.email}!</div> : <SignUp />}
-      </div>
-
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/sign-up" element={<SignUp />} />
-        <Route path="/sign-in" element={<SignIn />} />
-      </Routes>
-    </>
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/sign-up" element={<SignUp />} />
+      <Route path="/sign-in" element={<SignIn />} />
+    </Routes>
   );
 }
 

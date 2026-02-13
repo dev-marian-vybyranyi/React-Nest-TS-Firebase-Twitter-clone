@@ -11,6 +11,7 @@ interface AuthState {
   setUser: (user: User | null) => void;
   setLoading: (loading: boolean) => void;
   signUp: (data: SignUpFormValues) => Promise<void>;
+  signOut: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -51,6 +52,16 @@ export const useAuthStore = create<AuthState>((set) => ({
         isLoading: false,
       });
       throw error;
+    }
+  },
+
+  signOut: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      await auth.signOut();
+      set({ user: null, isLoading: false });
+    } catch (error: any) {
+      set({ error: error.message, isLoading: false });
     }
   },
 }));
