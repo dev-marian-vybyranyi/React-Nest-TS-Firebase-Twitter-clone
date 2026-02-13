@@ -2,7 +2,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { useNavigate } from "react-router-dom";
 
 const Home = () => {
-  const { user, signOut } = useAuthStore();
+  const { user, signOut, deleteUser } = useAuthStore();
   const navigate = useNavigate();
 
   return (
@@ -13,6 +13,8 @@ const Home = () => {
           <div>
             <div>Привіт, {user.email}!</div>
             <button onClick={signOut}>Logout</button>
+            <br />
+            <button onClick={deleteUser}>Delete account</button>
           </div>
         ) : (
           <button onClick={() => navigate("/sign-in")}>Sign in</button>

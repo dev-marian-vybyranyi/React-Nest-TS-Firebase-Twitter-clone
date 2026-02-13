@@ -18,6 +18,7 @@ interface AuthState {
   signIn: (data: SignInFormValues) => Promise<void>;
   signOut: () => Promise<void>;
   googleSignIn: () => Promise<void>;
+  deleteUser: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -135,6 +136,17 @@ export const useAuthStore = create<AuthState>((set) => ({
         isLoading: false,
       });
       throw error;
+    }
+  },
+
+  deleteUser: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      await api.delete("/auth/delete");
+      await auth.signOut();
+      set({ user: null, isLoading: false });
+    } catch (error: any) {
+      set({ error: error.message, isLoading: false });
     }
   },
 }));

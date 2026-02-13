@@ -134,4 +134,14 @@ export class AuthService {
       throw new BadRequestException('Invalid token');
     }
   }
+
+  async deleteUser(uid: string) {
+    try {
+      await admin.auth().deleteUser(uid);
+      await admin.firestore().collection('users').doc(uid).delete();
+      return { message: 'User deleted successfully' };
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
 }
