@@ -4,6 +4,7 @@ import {
   getAuth,
   GoogleAuthProvider,
 } from "firebase/auth";
+import { connectStorageEmulator, getStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -18,9 +19,11 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
+export const storage = getStorage(app);
 
 if (window.location.hostname === "localhost") {
   connectAuthEmulator(auth, "http://127.0.0.1:9099");
+  connectStorageEmulator(storage, "127.0.0.1", 9199);
 }
 
 export const googleProvider = new GoogleAuthProvider();

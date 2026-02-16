@@ -1,9 +1,13 @@
+import { PhotoUpload } from "@/components/ui/PhotoUpload";
 import { Button } from "@/components/ui/button";
+import { auth } from "@/firebase";
+import { useUploadPhoto } from "@/hooks/useUploadPhoto";
 import { updateProfileSchema } from "@/schemas/updateProfile";
 import { useAuthStore } from "@/store/useAuthStore";
 import type { UpdateUser } from "@/types/user";
 import { Form, Formik } from "formik";
 import { User } from "lucide-react";
+import { useState } from "react";
 import { toast } from "react-hot-toast";
 import AuthInput from "../auth/AuthInput";
 
@@ -14,6 +18,9 @@ interface EditProfileFormProps {
 
 const EditProfileForm = ({ onSuccess, onCancel }: EditProfileFormProps) => {
   const { user, updateProfile, isLoading } = useAuthStore();
+  const { uploadPhoto, isUploading, uploadProgress, resetUpload } =
+    useUploadPhoto();
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const initialValues = {
     name: user?.name || "",
@@ -23,7 +30,26 @@ const EditProfileForm = ({ onSuccess, onCancel }: EditProfileFormProps) => {
 
   const handleSubmit = async (values: UpdateUser) => {
     try {
-      await updateProfile(values);
+      let photoUrl = values.photo;
+
+      if (selectedFile && auth.currentUser) {
+        const path = `users/${auth.currentUser.uid}/profile-photo`;
+        const uploadedUrl = await uploadPhoto(selectedFile, path);
+
+        if (uploadedUrl) {
+          photoUrl = uploadedUrl;
+        } else {
+          return;
+        }
+      }
+
+      const cleanedValues = Object.fromEntries(
+        Object.entries({ ...values, photo: photoUrl }).filter(
+          ([_, v]) => v !== "",
+        ),
+      );
+
+      await updateProfile(cleanedValues);
       toast.success("Profile updated successfully!");
       onSuccess?.();
     } catch (error: any) {
@@ -52,22 +78,49 @@ const EditProfileForm = ({ onSuccess, onCancel }: EditProfileFormProps) => {
           placeholder="Enter your surname"
           icon={User}
         />
-        <AuthInput
-          label="Photo"
-          name="photo"
-          type="text"
-          placeholder="Enter your photo"
-          icon={User}
-        />
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Profile Photo</label>
+          <PhotoUpload
+            currentPhotoUrl={user?.photo}
+            onPhotoSelected={setSelectedFile}
+            onPhotoCleared={() => {
+              setSelectedFile(null);
+              resetUpload();
+            }}
+            isLoading={isUploading || isLoading}
+          />
+          {isUploading && (
+            <div className="space-y-1">
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+              <p className="text-xs text-center text-gray-600">
+                Uploading... {Math.round(uploadProgress)}%
+              </p>
+            </div>
+          )}
+        </div>
 
         <div className="flex gap-2 justify-end">
           {onCancel && (
-            <Button type="button" onClick={onCancel} disabled={isLoading}>
+            <Button
+              type="button"
+              onClick={onCancel}
+              disabled={isLoading || isUploading}
+            >
               Cancel
             </Button>
           )}
-          <Button type="submit" disabled={isLoading} variant="outline">
-            {isLoading ? "Saving..." : "Save"}
+          <Button
+            type="submit"
+            disabled={isLoading || isUploading}
+            variant="outline"
+          >
+            {isLoading || isUploading ? "Saving..." : "Save"}
           </Button>
         </div>
       </Form>

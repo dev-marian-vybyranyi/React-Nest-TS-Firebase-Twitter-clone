@@ -5,5 +5,5 @@ export const updateProfileSchema = Yup.object().shape({
   surname: Yup.string()
     .min(2, "Surname must be at least 2 characters")
     .optional(),
-  photo: Yup.string().url("Must be a valid URL").optional(),
+  photo: Yup.string().optional(),
 });

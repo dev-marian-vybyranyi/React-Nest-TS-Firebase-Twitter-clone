@@ -2,6 +2,8 @@ import {
   IsEmail,
   IsOptional,
   IsString,
+  isURL,
+  IsUrl,
   MinLength,
 } from 'class-validator';
 
@@ -21,7 +23,7 @@ export class CreateAuthDto {
   @MinLength(2)
   surname: string;
 
-  @IsString()
+  @IsUrl()
   @IsOptional()
   photo?: string;
 }
