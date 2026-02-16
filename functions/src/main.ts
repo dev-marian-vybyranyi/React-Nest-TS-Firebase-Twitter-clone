@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import express from 'express';
@@ -13,6 +14,13 @@ export const createNestServer = async (expressInstance: express.Express) => {
   const app = await NestFactory.create(
     AppModule,
     new ExpressAdapter(expressInstance),
+  );
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
   );
 
   app.enableCors({
