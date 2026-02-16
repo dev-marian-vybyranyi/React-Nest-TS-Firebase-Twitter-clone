@@ -6,7 +6,6 @@ import {
   Body,
   UseGuards,
   Req,
-  ForbiddenException,
 } from '@nestjs/common';
 import { RequestWithUser } from '../types/auth';
 import { FirebaseAuthGuard } from '../auth/auth.guard';
@@ -23,16 +22,12 @@ export class UserController {
     return this.userService.getUserById(id);
   }
 
-  @Patch(':id')
+  @Patch('me')
   @UseGuards(FirebaseAuthGuard)
   async updateUser(
-    @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
     @Req() req: RequestWithUser,
   ) {
-    if (req.user.uid !== id) {
-      throw new ForbiddenException('You can only update your own profile');
-    }
-    return this.userService.updateUser(id, updateUserDto);
+    return this.userService.updateUser(req.user.uid, updateUserDto);
   }
 }
