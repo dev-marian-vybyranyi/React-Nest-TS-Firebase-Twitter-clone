@@ -3,6 +3,7 @@ import * as admin from 'firebase-admin';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
 import { SignInDto } from './dto/signIn.dto';
+import { Auth } from './entities/auth.entity';
 
 @Injectable()
 export class AuthService {
@@ -83,7 +84,7 @@ export class AuthService {
           name: userData?.name,
           surname: userData?.surname,
           photo: userData?.photo,
-        },
+        } as Auth,
       };
     } catch (error) {
       throw new BadRequestException(error.message);
@@ -128,7 +129,7 @@ export class AuthService {
           name: userData?.name,
           surname: userData?.surname,
           photo: userData?.photo,
-        },
+        } as Auth,
       };
     } catch (error) {
       throw new BadRequestException('Invalid token');
