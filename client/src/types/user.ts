@@ -7,3 +7,9 @@ export interface User {
   emailVerified?: boolean;
   createdAt?: string;
 }
+
+export interface UpdateUser {
+  name?: string;
+  surname?: string;
+  photo?: string;
+}

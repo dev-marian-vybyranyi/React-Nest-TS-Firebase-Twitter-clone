@@ -1,7 +1,7 @@
 import { api } from "@/api/axios";
 import { auth, googleProvider } from "@/firebase";
 import type { SignUpFormValues, SignInFormValues } from "@/types/forms";
-import type { User } from "@/types/user";
+import type { UpdateUser, User } from "@/types/user";
 import type { AuthResponse, SignUpResponse } from "@/types/auth";
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { create } from "zustand";
@@ -17,6 +17,7 @@ interface AuthState {
   signOut: () => Promise<void>;
   googleSignIn: () => Promise<void>;
   deleteUser: () => Promise<void>;
+  updateProfile: (updateData: UpdateUser) => Promise<AuthResponse>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -143,6 +144,29 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ user: null, isLoading: false });
     } catch (error: any) {
       set({ error: error.message, isLoading: false });
+    }
+  },
+
+  updateProfile: async (updateData: UpdateUser) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const { data } = await api.patch<AuthResponse>("/user/me", updateData);
+
+      set((state) => ({
+        user: state.user ? { ...state.user, ...updateData } : null,
+        isLoading: false,
+      }));
+
+      return data;
+    } catch (error: any) {
+      const message =
+        error.response?.data?.message || "Update failed. Please try again.";
+      set({
+        error: Array.isArray(message) ? message[0] : message,
+        isLoading: false,
+      });
+      throw error;
     }
   },
 }));
