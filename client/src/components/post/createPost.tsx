@@ -13,6 +13,7 @@ const CreatePost = () => {
   const { createPosts, loading: isPostCreating } = usePostStore();
   const { uploadPhoto, isUploading, resetUpload } = useUploadPhoto();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadKey, setUploadKey] = useState(0); //костиль для перезавантадення компоненту
 
   const initialValues = {
     text: "",
@@ -43,6 +44,7 @@ const CreatePost = () => {
       resetForm();
       setSelectedFile(null);
       resetUpload();
+      setUploadKey((prev) => prev + 1); //костиль для перезавантадення компоненту
     } catch (error) {
       console.error("Failed to create post:", error);
     }
@@ -69,6 +71,7 @@ const CreatePost = () => {
             placeholder="Enter your text"
           />
           <PhotoUpload
+            key={uploadKey} //костиль для перезавантадення компоненту
             type="post"
             onPhotoSelected={(file) => {
               setSelectedFile(file);
