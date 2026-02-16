@@ -7,13 +7,13 @@ import {
 import * as admin from 'firebase-admin';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
+import { Post } from './entities/post.entity';
 
 @Injectable()
 export class PostService {
   private readonly postsCollection = admin.firestore().collection('posts');
-  private readonly usersCollection = admin.firestore().collection('users');
 
-  async create(createPostDto: CreatePostDto, userId: string) {
+  async create(createPostDto: CreatePostDto, userId: string): Promise<Post> {
     try {
       const postData = {
         ...createPostDto,
@@ -25,41 +25,48 @@ export class PostService {
       const postRef = await this.postsCollection.add(postData);
       const postDoc = await postRef.get();
 
+      const newPostData = postDoc.data();
+
+      if (!newPostData) {
+        throw new InternalServerErrorException('Failed to create post');
+      }
+
       return {
         id: postRef.id,
-        ...postDoc.data(),
-      };
+        ...newPostData,
+        createdAt: (
+          newPostData.createdAt as admin.firestore.Timestamp
+        ).toDate(),
+        updatedAt: (
+          newPostData.updatedAt as admin.firestore.Timestamp
+        ).toDate(),
+      } as Post;
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
   }
 
-  async findAll() {
+  async findAll(): Promise<Post[]> {
     try {
       const postsSnapshot = await this.postsCollection
         .orderBy('createdAt', 'desc')
         .get();
 
-      const posts = await Promise.all(
-        postsSnapshot.docs.map(async (doc) => {
-          const postData = doc.data();
-          const userDoc = await this.usersCollection.doc(postData.userId).get();
-
-          return {
-            id: doc.id,
-            ...postData,
-            user: userDoc.exists ? userDoc.data() : null,
-          };
-        }),
-      );
-
-      return posts;
+      return postsSnapshot.docs.map((doc) => {
+        const postData = doc.data();
+        return {
+          id: doc.id,
+          ...postData,
+          createdAt: (postData.createdAt as admin.firestore.Timestamp).toDate(),
+          updatedAt: (postData.updatedAt as admin.firestore.Timestamp).toDate(),
+        } as Post;
+      });
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
   }
 
-  async findOne(id: string) {
+  async findOne(id: string): Promise<Post> {
     try {
       const postDoc = await this.postsCollection.doc(id).get();
 
@@ -73,13 +80,12 @@ export class PostService {
         throw new NotFoundException('Post data not found');
       }
 
-      const userDoc = await this.usersCollection.doc(postData.userId).get();
-
       return {
         id: postDoc.id,
         ...postData,
-        user: userDoc.exists ? userDoc.data() : null,
-      };
+        createdAt: (postData.createdAt as admin.firestore.Timestamp).toDate(),
+        updatedAt: (postData.updatedAt as admin.firestore.Timestamp).toDate(),
+      } as Post;
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
@@ -88,33 +94,32 @@ export class PostService {
     }
   }
 
-  async findByUserId(userId: string) {
+  async findByUserId(userId: string): Promise<Post[]> {
     try {
       const postsSnapshot = await this.postsCollection
         .where('userId', '==', userId)
         .orderBy('createdAt', 'desc')
         .get();
 
-      const posts = await Promise.all(
-        postsSnapshot.docs.map(async (doc) => {
-          const postData = doc.data();
-          const userDoc = await this.usersCollection.doc(postData.userId).get();
-
-          return {
-            id: doc.id,
-            ...postData,
-            user: userDoc.exists ? userDoc.data() : null,
-          };
-        }),
-      );
-
-      return posts;
+      return postsSnapshot.docs.map((doc) => {
+        const postData = doc.data();
+        return {
+          id: doc.id,
+          ...postData,
+          createdAt: (postData.createdAt as admin.firestore.Timestamp).toDate(),
+          updatedAt: (postData.updatedAt as admin.firestore.Timestamp).toDate(),
+        } as Post;
+      });
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
   }
 
-  async update(id: string, updatePostDto: UpdatePostDto, userId: string) {
+  async update(
+    id: string,
+    updatePostDto: UpdatePostDto,
+    userId: string,
+  ): Promise<Post> {
     try {
       const postDoc = await this.postsCollection.doc(id).get();
 
@@ -138,12 +143,25 @@ export class PostService {
       };
 
       await this.postsCollection.doc(id).update(updateData);
+      const updatedPostDoc = await this.postsCollection.doc(id).get();
+      const updatedPostData = updatedPostDoc.data();
+
+      if (!updatedPostData) {
+        throw new InternalServerErrorException(
+          'Failed to retrieve updated post',
+        );
+      }
 
       return {
         id,
-        ...postData,
-        ...updateData,
-      };
+        ...updatedPostData,
+        createdAt: (
+          updatedPostData.createdAt as admin.firestore.Timestamp
+        ).toDate(),
+        updatedAt: (
+          updatedPostData.updatedAt as admin.firestore.Timestamp
+        ).toDate(),
+      } as Post;
     } catch (error) {
       if (
         error instanceof NotFoundException ||
