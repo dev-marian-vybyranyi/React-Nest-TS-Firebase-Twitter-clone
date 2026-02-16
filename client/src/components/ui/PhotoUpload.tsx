@@ -9,6 +9,7 @@ interface PhotoUploadProps {
   onPhotoCleared: () => void;
   onPhotoDeleted?: () => void;
   isLoading?: boolean;
+  type?: "profile" | "post";
 }
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -25,6 +26,7 @@ export const PhotoUpload = ({
   onPhotoCleared,
   onPhotoDeleted,
   isLoading = false,
+  type = "profile",
 }: PhotoUploadProps) => {
   const [previewUrl, setPreviewUrl] = useState<string | undefined>(
     currentPhotoUrl,
@@ -77,16 +79,22 @@ export const PhotoUpload = ({
     }
   };
 
+  const containerClasses =
+    type === "profile" ? "w-32 h-32 mx-auto" : "w-full h-auto";
+  const imageClasses =
+    type === "profile"
+      ? "rounded-full border-2 border-gray-200"
+      : "rounded-lg border border-gray-200";
+
   return (
     <div className="space-y-4">
-      {/* Preview */}
-      <div className="relative w-32 h-32 mx-auto">
+      <div className={`relative ${containerClasses}`}>
         {previewUrl ? (
           <>
             <img
               src={previewUrl}
-              alt="Profile preview"
-              className="w-full h-full object-cover rounded-full border-2 border-gray-200"
+              alt="Preview"
+              className={`w-full h-full object-cover ${imageClasses}`}
             />
             {fileName ? (
               <button
@@ -113,13 +121,14 @@ export const PhotoUpload = ({
             )}
           </>
         ) : (
-          <div className="w-full h-full rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50">
+          <div
+            className={`w-full h-full flex items-center justify-center bg-gray-50 border-2 border-dashed border-gray-300 ${type === "profile" ? "rounded-full" : "rounded-lg min-h-64"}`}
+          >
             <Upload className="h-8 w-8 text-gray-400" />
           </div>
         )}
       </div>
 
-      {/* File Input */}
       <div className="flex items-center justify-center">
         <label className="cursor-pointer">
           <input

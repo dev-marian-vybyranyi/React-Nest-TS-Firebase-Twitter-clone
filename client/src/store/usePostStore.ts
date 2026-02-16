@@ -7,6 +7,9 @@ interface PostState {
   loading: boolean;
   error: string | null;
   getAllPosts: () => Promise<void>;
+  createPosts: (
+    postData: Omit<Post, "id" | "createdAt" | "updatedAt" | "userId">,
+  ) => Promise<void>;
 }
 
 export const usePostStore = create<PostState>((set) => ({
@@ -21,6 +24,22 @@ export const usePostStore = create<PostState>((set) => ({
       set({ posts: response.data, loading: false });
     } catch (error: any) {
       set({ loading: false, error: error.message || "Failed to fetch posts" });
+    }
+  },
+
+  createPosts: async (
+    postData: Omit<Post, "id" | "createdAt" | "updatedAt" | "userId">,
+  ) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await api.post("/post", postData);
+      set((state) => ({
+        posts: [response.data, ...state.posts],
+        loading: false,
+      }));
+    } catch (error: any) {
+      set({ loading: false, error: error.message || "Failed to create post" });
+      throw error;
     }
   },
 }));
