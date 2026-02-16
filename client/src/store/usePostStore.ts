@@ -32,7 +32,7 @@ export const usePostStore = create<PostState>((set) => ({
   ) => {
     set({ loading: true, error: null });
     try {
-      const response = await api.post("/post", postData);
+      const response = await api.post("/posts", postData);
       set((state) => ({
         posts: [response.data, ...state.posts],
         loading: false,

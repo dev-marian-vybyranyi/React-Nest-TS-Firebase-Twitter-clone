@@ -11,15 +11,18 @@ import { Post } from './entities/post.entity';
 
 @Injectable()
 export class PostService {
-  private readonly postsCollection = admin.firestore().collection('posts');
+  private get postsCollection() {
+    return admin.firestore().collection('posts');
+  }
 
   async create(createPostDto: CreatePostDto, userId: string): Promise<Post> {
     try {
+      const now = new Date();
       const postData = {
         ...createPostDto,
         userId,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        createdAt: now,
+        updatedAt: now,
       };
 
       const postRef = await this.postsCollection.add(postData);
@@ -33,16 +36,18 @@ export class PostService {
 
       return {
         id: postRef.id,
-        ...newPostData,
-        createdAt: (
-          newPostData.createdAt as admin.firestore.Timestamp
-        ).toDate(),
-        updatedAt: (
-          newPostData.updatedAt as admin.firestore.Timestamp
-        ).toDate(),
+        title: newPostData.title,
+        text: newPostData.text,
+        photo: newPostData.photo,
+        userId: newPostData.userId,
+        createdAt: newPostData.createdAt,
+        updatedAt: newPostData.updatedAt,
       } as Post;
     } catch (error) {
-      throw new InternalServerErrorException(error.message);
+      console.error('Error creating post:', error);
+      throw new InternalServerErrorException(
+        error.message || 'Failed to create post',
+      );
     }
   }
 
@@ -57,8 +62,8 @@ export class PostService {
         return {
           id: doc.id,
           ...postData,
-          createdAt: (postData.createdAt as admin.firestore.Timestamp).toDate(),
-          updatedAt: (postData.updatedAt as admin.firestore.Timestamp).toDate(),
+          createdAt: postData.createdAt,
+          updatedAt: postData.updatedAt,
         } as Post;
       });
     } catch (error) {
@@ -83,8 +88,8 @@ export class PostService {
       return {
         id: postDoc.id,
         ...postData,
-        createdAt: (postData.createdAt as admin.firestore.Timestamp).toDate(),
-        updatedAt: (postData.updatedAt as admin.firestore.Timestamp).toDate(),
+        createdAt: postData.createdAt,
+        updatedAt: postData.updatedAt,
       } as Post;
     } catch (error) {
       if (error instanceof NotFoundException) {
@@ -106,8 +111,8 @@ export class PostService {
         return {
           id: doc.id,
           ...postData,
-          createdAt: (postData.createdAt as admin.firestore.Timestamp).toDate(),
-          updatedAt: (postData.updatedAt as admin.firestore.Timestamp).toDate(),
+          createdAt: postData.createdAt,
+          updatedAt: postData.updatedAt,
         } as Post;
       });
     } catch (error) {
@@ -139,7 +144,7 @@ export class PostService {
 
       const updateData = {
         ...updatePostDto,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: new Date(),
       };
 
       await this.postsCollection.doc(id).update(updateData);
@@ -155,12 +160,8 @@ export class PostService {
       return {
         id,
         ...updatedPostData,
-        createdAt: (
-          updatedPostData.createdAt as admin.firestore.Timestamp
-        ).toDate(),
-        updatedAt: (
-          updatedPostData.updatedAt as admin.firestore.Timestamp
-        ).toDate(),
+        createdAt: updatedPostData.createdAt,
+        updatedAt: updatedPostData.updatedAt,
       } as Post;
     } catch (error) {
       if (
