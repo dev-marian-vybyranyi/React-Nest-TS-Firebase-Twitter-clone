@@ -27,6 +27,16 @@ export const usePostStore = create<PostState>((set) => ({
     }
   },
 
+  getAllPostsByUserId: async (userId: string) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await api.get(`/posts/user/${userId}`);
+      set({ posts: response.data, loading: false });
+    } catch (error: any) {
+      set({ loading: false, error: error.message || "Failed to fetch posts" });
+    }
+  },
+
   createPosts: async (
     postData: Omit<Post, "id" | "createdAt" | "updatedAt" | "userId">,
   ) => {
