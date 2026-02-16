@@ -1,11 +1,9 @@
 import { api } from "@/api/axios";
 import { auth, googleProvider } from "@/firebase";
-import type { SignUpFormValues, SignInFormValues, User } from "@/types/auth";
-import {
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  sendEmailVerification,
-} from "firebase/auth";
+import type { SignUpFormValues, SignInFormValues } from "@/types/forms";
+import type { User } from "@/types/user";
+import type { AuthResponse, SignUpResponse } from "@/types/auth";
+import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { create } from "zustand";
 
 interface AuthState {
@@ -33,15 +31,13 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true, error: null });
 
     try {
-      await api.post("/auth/signup", signUpData);
+      await api.post<SignUpResponse>("/auth/signup", signUpData);
 
       const userCredential = await signInWithEmailAndPassword(
         auth,
         signUpData.email,
         signUpData.password,
       );
-
-      await sendEmailVerification(userCredential.user);
 
       set({
         user: {
@@ -76,7 +72,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
       const token = await userCredential.user.getIdToken();
 
-      const { data } = await api.post("/auth/signin", { token });
+      const { data } = await api.post<AuthResponse>("/auth/signin", { token });
 
       set({
         user: {
@@ -115,7 +111,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       const userCredential = await signInWithPopup(auth, googleProvider);
       const token = await userCredential.user.getIdToken();
 
-      const { data } = await api.post("/auth/google", { token });
+      const { data } = await api.post<AuthResponse>("/auth/google", { token });
 
       set({
         user: {

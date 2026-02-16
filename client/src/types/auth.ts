@@ -1,20 +1,13 @@
-export interface SignUpFormValues {
-  name: string;
-  surname: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
+import type { User } from "./user";
+
+export interface AuthResponse {
+  message: string;
+  user: User;
+  token?: string;
 }
 
-export interface SignInFormValues {
-  email: string;
-  password: string;
-}
-
-export interface User {
+export interface SignUpResponse {
   uid: string;
   email: string;
-  name?: string;
-  surname?: string;
-  photo?: string;
+  message: string;
 }
