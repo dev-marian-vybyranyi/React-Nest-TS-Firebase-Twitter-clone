@@ -3,7 +3,13 @@ import { auth, googleProvider } from "@/firebase";
 import type { SignUpFormValues, SignInFormValues } from "@/types/forms";
 import type { UpdateUser, User } from "@/types/user";
 import type { AuthResponse, SignUpResponse } from "@/types/auth";
-import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import {
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  updatePassword,
+} from "firebase/auth";
 import { create } from "zustand";
 
 interface AuthState {
@@ -18,6 +24,10 @@ interface AuthState {
   googleSignIn: () => Promise<void>;
   deleteUser: () => Promise<void>;
   updateProfile: (updateData: UpdateUser) => Promise<AuthResponse>;
+  changePassword: (
+    currentPassword: string,
+    newPassword: string,
+  ) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -166,6 +176,29 @@ export const useAuthStore = create<AuthState>((set) => ({
         error: Array.isArray(message) ? message[0] : message,
         isLoading: false,
       });
+      throw error;
+    }
+  },
+
+  changePassword: async (currentPassword: string, newPassword: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const user = auth.currentUser;
+      if (!user || !user.email) {
+        throw new Error("No user is currently signed in");
+      }
+
+      const credential = EmailAuthProvider.credential(
+        user.email,
+        currentPassword,
+      );
+      await reauthenticateWithCredential(user, credential);
+
+      await updatePassword(user, newPassword);
+
+      set({ isLoading: false });
+    } catch (error: any) {
+      set({ isLoading: false, error: error.message });
       throw error;
     }
   },

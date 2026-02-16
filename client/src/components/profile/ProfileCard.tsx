@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/card";
 import type { User as UserType } from "@/types/user";
 import { LogOut, Trash2, User } from "lucide-react";
+import ChangePasswordDialog from "../auth/ChangePasswordDialog";
 import EditProfileDialog from "./EditProfileDialog";
 
 interface ProfileCardProps {
@@ -44,6 +45,7 @@ const ProfileCard = ({
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         <EditProfileDialog />
+        <ChangePasswordDialog />
         <Button
           variant="outline"
           className="w-full gap-2 justify-start pl-4"
