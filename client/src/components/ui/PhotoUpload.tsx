@@ -1,4 +1,4 @@
-import { Upload, X } from "lucide-react";
+import { Trash2, Upload, X } from "lucide-react";
 import { useRef, useState } from "react";
 import type { ChangeEvent } from "react";
 import { toast } from "react-hot-toast";
@@ -7,6 +7,7 @@ interface PhotoUploadProps {
   currentPhotoUrl?: string;
   onPhotoSelected: (file: File) => void;
   onPhotoCleared: () => void;
+  onPhotoDeleted?: () => void;
   isLoading?: boolean;
 }
 
@@ -22,6 +23,7 @@ export const PhotoUpload = ({
   currentPhotoUrl,
   onPhotoSelected,
   onPhotoCleared,
+  onPhotoDeleted,
   isLoading = false,
 }: PhotoUploadProps) => {
   const [previewUrl, setPreviewUrl] = useState<string | undefined>(
@@ -64,28 +66,58 @@ export const PhotoUpload = ({
     }
   };
 
+  const handleDelete = () => {
+    if (onPhotoDeleted) {
+      onPhotoDeleted();
+      setPreviewUrl(undefined);
+      setFileName(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
   return (
     <div className="space-y-4">
       {/* Preview */}
-      {previewUrl && (
-        <div className="relative w-32 h-32 mx-auto">
-          <img
-            src={previewUrl}
-            alt="Profile preview"
-            className="w-full h-full object-cover rounded-full border-2 border-gray-200"
-          />
-          {fileName && (
-            <button
-              type="button"
-              onClick={handleClear}
-              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
-              aria-label="Remove photo"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
-        </div>
-      )}
+      <div className="relative w-32 h-32 mx-auto">
+        {previewUrl ? (
+          <>
+            <img
+              src={previewUrl}
+              alt="Profile preview"
+              className="w-full h-full object-cover rounded-full border-2 border-gray-200"
+            />
+            {fileName ? (
+              <button
+                type="button"
+                onClick={handleClear}
+                className="absolute -top-2 -right-2 bg-gray-500 text-white rounded-full p-1 hover:bg-gray-600 transition-colors"
+                aria-label="Clear selection"
+                title="Clear selection"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            ) : (
+              onPhotoDeleted && (
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                  aria-label="Delete photo"
+                  title="Delete photo"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              )
+            )}
+          </>
+        ) : (
+          <div className="w-full h-full rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50">
+            <Upload className="h-8 w-8 text-gray-400" />
+          </div>
+        )}
+      </div>
 
       {/* File Input */}
       <div className="flex items-center justify-center">

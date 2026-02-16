@@ -9,7 +9,7 @@ export class UpdateUserDto {
   @IsOptional()
   surname: string;
 
-  @IsUrl()
+  @IsString()
   @IsOptional()
   photo?: string;
 }

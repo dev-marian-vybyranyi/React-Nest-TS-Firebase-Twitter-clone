@@ -18,9 +18,10 @@ interface EditProfileFormProps {
 
 const EditProfileForm = ({ onSuccess, onCancel }: EditProfileFormProps) => {
   const { user, updateProfile, isLoading } = useAuthStore();
-  const { uploadPhoto, isUploading, uploadProgress, resetUpload } =
+  const { uploadPhoto, deletePhoto, isUploading, uploadProgress, resetUpload } =
     useUploadPhoto();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isPhotoDeleted, setIsPhotoDeleted] = useState(false);
 
   const initialValues = {
     name: user?.name || "",
@@ -32,7 +33,13 @@ const EditProfileForm = ({ onSuccess, onCancel }: EditProfileFormProps) => {
     try {
       let photoUrl = values.photo;
 
-      if (selectedFile && auth.currentUser) {
+      if (isPhotoDeleted) {
+        if (user?.photo && auth.currentUser) {
+          const path = `users/${auth.currentUser.uid}/profile-photo`;
+          await deletePhoto(path);
+        }
+        photoUrl = "";
+      } else if (selectedFile && auth.currentUser) {
         const path = `users/${auth.currentUser.uid}/profile-photo`;
         const uploadedUrl = await uploadPhoto(selectedFile, path);
 
@@ -45,7 +52,7 @@ const EditProfileForm = ({ onSuccess, onCancel }: EditProfileFormProps) => {
 
       const cleanedValues = Object.fromEntries(
         Object.entries({ ...values, photo: photoUrl }).filter(
-          ([_, v]) => v !== "",
+          ([_, v]) => v !== "" || (isPhotoDeleted && _ === "photo"),
         ),
       );
 
@@ -83,10 +90,17 @@ const EditProfileForm = ({ onSuccess, onCancel }: EditProfileFormProps) => {
           <label className="text-sm font-medium">Profile Photo</label>
           <PhotoUpload
             currentPhotoUrl={user?.photo}
-            onPhotoSelected={setSelectedFile}
+            onPhotoSelected={(file) => {
+              setSelectedFile(file);
+              setIsPhotoDeleted(false);
+            }}
             onPhotoCleared={() => {
               setSelectedFile(null);
               resetUpload();
+            }}
+            onPhotoDeleted={() => {
+              setSelectedFile(null);
+              setIsPhotoDeleted(true);
             }}
             isLoading={isUploading || isLoading}
           />

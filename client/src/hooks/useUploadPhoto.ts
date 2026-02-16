@@ -1,10 +1,16 @@
 import { auth, storage } from "@/firebase";
-import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
+import {
+  deleteObject,
+  getDownloadURL,
+  ref,
+  uploadBytesResumable,
+} from "firebase/storage";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 
 interface UseUploadPhotoReturn {
   uploadPhoto: (file: File, path: string) => Promise<string | null>;
+  deletePhoto: (path: string) => Promise<boolean>;
   isUploading: boolean;
   uploadProgress: number;
   resetUpload: () => void;
@@ -67,6 +73,21 @@ export const useUploadPhoto = (): UseUploadPhotoReturn => {
     }
   };
 
+  const deletePhoto = async (path: string): Promise<boolean> => {
+    try {
+      const storageRef = ref(storage, path);
+      await deleteObject(storageRef);
+      return true;
+    } catch (error: any) {
+      if (error.code === "storage/object-not-found") {
+        return true;
+      }
+      console.error("Delete error:", error);
+      toast.error("Failed to delete photo");
+      return false;
+    }
+  };
+
   const resetUpload = () => {
     setIsUploading(false);
     setUploadProgress(0);
@@ -74,6 +95,7 @@ export const useUploadPhoto = (): UseUploadPhotoReturn => {
 
   return {
     uploadPhoto,
+    deletePhoto,
     isUploading,
     uploadProgress,
     resetUpload,
