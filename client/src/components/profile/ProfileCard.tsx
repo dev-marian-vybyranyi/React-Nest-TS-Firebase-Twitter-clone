@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/card";
 import type { User as UserType } from "@/types/user";
 import { LogOut, Trash2, User } from "lucide-react";
+import EditProfileDialog from "./EditProfileDialog";
 
 interface ProfileCardProps {
   user: UserType;
@@ -42,6 +43,7 @@ const ProfileCard = ({
         <CardDescription className="text-sm">{user.email}</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
+        <EditProfileDialog />
         <Button
           variant="outline"
           className="w-full gap-2 justify-start pl-4"

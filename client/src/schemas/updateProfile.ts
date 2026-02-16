@@ -1,10 +1,9 @@
-import { z } from "zod";
+import * as Yup from "yup";
 
-export const updateProfileSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters").optional(),
-  surname: z
-    .string()
+export const updateProfileSchema = Yup.object().shape({
+  name: Yup.string().min(2, "Name must be at least 2 characters").optional(),
+  surname: Yup.string()
     .min(2, "Surname must be at least 2 characters")
     .optional(),
-  photo: z.string().url("Must be a valid URL").optional(),
+  photo: Yup.string().url("Must be a valid URL").optional(),
 });
