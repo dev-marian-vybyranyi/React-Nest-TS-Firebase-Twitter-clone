@@ -7,9 +7,11 @@ interface PostState {
   loading: boolean;
   error: string | null;
   getAllPosts: () => Promise<void>;
+  getAllPostsByUserId: (userId: string) => Promise<void>;
   createPosts: (
     postData: Omit<Post, "id" | "createdAt" | "updatedAt" | "userId">,
   ) => Promise<void>;
+  updatePost: (postId: string, postData: Partial<Post>) => Promise<void>;
 }
 
 export const usePostStore = create<PostState>((set) => ({
@@ -49,6 +51,22 @@ export const usePostStore = create<PostState>((set) => ({
       }));
     } catch (error: any) {
       set({ loading: false, error: error.message || "Failed to create post" });
+      throw error;
+    }
+  },
+
+  updatePost: async (postId: string, postData: Partial<Post>) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await api.patch(`/posts/${postId}`, postData);
+      set((state) => ({
+        posts: state.posts.map((post) =>
+          post.id === postId ? { ...post, ...response.data } : post,
+        ),
+        loading: false,
+      }));
+    } catch (error: any) {
+      set({ loading: false, error: error.message || "Failed to update post" });
       throw error;
     }
   },
