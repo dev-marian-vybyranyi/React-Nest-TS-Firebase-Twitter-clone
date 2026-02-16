@@ -7,7 +7,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Pencil } from "lucide-react";
+import { RectangleEllipsis } from "lucide-react";
 import { useState } from "react";
 import ChangePasswordForm from "./ChangePasswordForm";
 
@@ -18,7 +18,7 @@ const ChangePasswordDialog = () => {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" className="w-full gap-2 justify-start pl-4">
-          <Pencil className="h-4 w-4" />
+          <RectangleEllipsis className="h-4 w-4" />
           Change password
         </Button>
       </DialogTrigger>
