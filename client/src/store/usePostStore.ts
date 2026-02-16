@@ -1,0 +1,26 @@
+import { create } from "zustand";
+import { api } from "@/api/axios";
+import type { Post } from "@/types/post";
+
+interface PostState {
+  posts: Post[];
+  loading: boolean;
+  error: string | null;
+  getAllPosts: () => Promise<void>;
+}
+
+export const usePostStore = create<PostState>((set) => ({
+  posts: [],
+  loading: false,
+  error: null,
+
+  getAllPosts: async () => {
+    set({ loading: true, error: null });
+    try {
+      const response = await api.get("/posts");
+      set({ posts: response.data, loading: false });
+    } catch (error: any) {
+      set({ loading: false, error: error.message || "Failed to fetch posts" });
+    }
+  },
+}));
