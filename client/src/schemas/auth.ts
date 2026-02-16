@@ -40,3 +40,7 @@ export const ChangePasswordSchema = Yup.object({
     .oneOf([Yup.ref("newPassword")], "Passwords must match")
     .required("Required"),
 });
+
+export const ForgotPasswordSchema = Yup.object({
+  email: Yup.string().email("Invalid email address").required("Required"),
+});

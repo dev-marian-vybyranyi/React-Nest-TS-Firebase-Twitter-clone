@@ -6,6 +6,7 @@ import type { AuthResponse, SignUpResponse } from "@/types/auth";
 import {
   EmailAuthProvider,
   reauthenticateWithCredential,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
   updatePassword,
@@ -28,6 +29,7 @@ interface AuthState {
     currentPassword: string,
     newPassword: string,
   ) => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -196,6 +198,17 @@ export const useAuthStore = create<AuthState>((set) => ({
 
       await updatePassword(user, newPassword);
 
+      set({ isLoading: false });
+    } catch (error: any) {
+      set({ isLoading: false, error: error.message });
+      throw error;
+    }
+  },
+
+  resetPassword: async (email: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      await sendPasswordResetEmail(auth, email);
       set({ isLoading: false });
     } catch (error: any) {
       set({ isLoading: false, error: error.message });

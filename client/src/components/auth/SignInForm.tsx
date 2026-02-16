@@ -6,6 +6,7 @@ import { Form, Formik } from "formik";
 import { KeyRound, Mail } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AuthInput from "./AuthInput";
+import ForgotPasswordDialog from "./ForgotPasswordDialog";
 
 const SignInForm = () => {
   const initialValues: SignInFormValues = {
@@ -41,6 +42,10 @@ const SignInForm = () => {
           placeholder="Enter your password"
           icon={KeyRound}
         />
+
+        <div className="flex justify-end -mt-2">
+          <ForgotPasswordDialog />
+        </div>
 
         <Button
           type="submit"
