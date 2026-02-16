@@ -3,7 +3,7 @@ import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
 import { SignInDto } from './dto/signIn.dto';
-import { FirebaseAuthGuard } from './auth.guard';
+import { AuthGuard } from '../common/guards/auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -24,7 +24,7 @@ export class AuthController {
     return this.authService.signIn(signInDto);
   }
 
-  @UseGuards(FirebaseAuthGuard)
+  @UseGuards(AuthGuard)
   @Delete('delete')
   deleteAccount(@Req() req) {
     return this.authService.deleteUser(req.user.uid);

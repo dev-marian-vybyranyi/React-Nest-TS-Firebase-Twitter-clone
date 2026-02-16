@@ -8,7 +8,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { RequestWithUser } from '../types/auth';
-import { FirebaseAuthGuard } from '../auth/auth.guard';
+import { AuthGuard } from '../common/guards/auth.guard';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 
@@ -17,13 +17,13 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get(':id')
-  @UseGuards(FirebaseAuthGuard)
+  @UseGuards(AuthGuard)
   async getUserById(@Param('id') id: string) {
     return this.userService.getUserById(id);
   }
 
   @Patch('me')
-  @UseGuards(FirebaseAuthGuard)
+  @UseGuards(AuthGuard)
   async updateUser(
     @Body() updateUserDto: UpdateUserDto,
     @Req() req: RequestWithUser,
