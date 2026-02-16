@@ -1,6 +1,6 @@
 import { useAuthStore } from "@/store/useAuthStore";
 import { SignUpSchema } from "@/schemas/auth";
-import type { SignUpFormValues } from "@/types/auth";
+import type { SignUpFormValues } from "@/types/forms";
 import { Form, Formik } from "formik";
 import { KeyRound, Mail, User } from "lucide-react";
 import AuthInput from "./AuthInput";

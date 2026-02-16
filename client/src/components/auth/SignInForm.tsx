@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { SignInSchema } from "@/schemas/auth";
 import { useAuthStore } from "@/store/useAuthStore";
-import type { SignInFormValues } from "@/types/auth";
+import type { SignInFormValues } from "@/types/forms";
 import { Form, Formik } from "formik";
 import { KeyRound, Mail } from "lucide-react";
 import { useNavigate } from "react-router-dom";

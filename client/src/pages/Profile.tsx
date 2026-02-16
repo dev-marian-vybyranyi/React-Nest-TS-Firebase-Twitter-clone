@@ -1,16 +1,10 @@
+import PostList from "@/components/profile/PostList";
+import ProfileCard from "@/components/profile/ProfileCard";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import posts from "@/lib/posts";
 import { useAuthStore } from "@/store/useAuthStore";
-import { LogOut, Trash2, User } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
   const { user, signOut, deleteUser, isLoading } = useAuthStore();
@@ -31,7 +25,7 @@ const Profile = () => {
     toast(
       (t) => (
         <div className="flex flex-col gap-2">
-          <p className="font-medium text-sm bg-slate-100">
+          <p className="font-medium text-sm">
             Are you sure you want to delete your account?
           </p>
           <div className="flex justify-end gap-2">
@@ -45,6 +39,7 @@ const Profile = () => {
             <Button
               variant="outline"
               size="sm"
+              className="text-red-500"
               onClick={async () => {
                 toast.dismiss(t.id);
                 try {
@@ -77,51 +72,18 @@ const Profile = () => {
   }
 
   return (
-    <div className="flex h-screen w-screen items-center justify-center bg-slate-100">
-      <Card className="w-[380px] shadow-xl">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-white overflow-hidden border-4 border-white shadow-sm">
-            {user.photo ? (
-              <img
-                src={user.photo}
-                alt={user.name}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <User className="h-12 w-12 text-slate-400" />
-            )}
-          </div>
-          <CardTitle className="text-2xl font-bold">
-            {user.name} {user.surname}
-          </CardTitle>
-          <CardDescription>{user.email}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-md bg-slate-50 p-3 text-xs text-center text-muted-foreground">
-            Account ID: {user.uid}
-          </div>
-        </CardContent>
-        <CardFooter className="flex flex-col gap-2">
-          <Button
-            variant="outline"
-            className="w-full gap-2"
-            onClick={handleSignOut}
-            disabled={isLoading}
-          >
-            <LogOut className="h-4 w-4" />
-            Sign Out
-          </Button>
-          <Button
-            variant="outline"
-            className="w-full gap-2"
-            onClick={handleDeleteAccount}
-            disabled={isLoading}
-          >
-            <Trash2 className="h-4 w-4" />
-            Delete Account
-          </Button>
-        </CardFooter>
-      </Card>
+    <div className="min-h-screen w-full bg-slate-100 p-4">
+      <div className="mx-auto max-w-6xl grid gap-6 grid-cols-[350px_1fr]">
+        <div className="space-y-6">
+          <ProfileCard
+            user={user}
+            onSignOut={handleSignOut}
+            onDeleteAccount={handleDeleteAccount}
+            isLoading={isLoading}
+          />
+        </div>
+        <PostList posts={posts} />
+      </div>
     </div>
   );
 };
