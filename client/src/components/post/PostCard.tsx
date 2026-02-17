@@ -5,12 +5,16 @@ import type { Post } from "@/types/post";
 import { User } from "lucide-react";
 import { Link } from "react-router-dom";
 import PostDropdown from "./PostDropdown";
+import { useAuthStore } from "@/store/useAuthStore";
 
 interface PostCardProps {
   post?: Post;
 }
 
 const PostCard = ({ post }: PostCardProps) => {
+  const { user } = useAuthStore();
+  const isOwnPost = user?.uid === post?.userId;
+
   if (!post) {
     return null;
   }
@@ -40,7 +44,7 @@ const PostCard = ({ post }: PostCardProps) => {
           </Link>
           <p className="text-xs text-slate-500">{formatDate(post.createdAt)}</p>
         </div>
-        <PostDropdown postId={post.id} />
+        {isOwnPost && <PostDropdown postId={post.id} />}
       </div>
 
       <div className="flex flex-col px-4">
