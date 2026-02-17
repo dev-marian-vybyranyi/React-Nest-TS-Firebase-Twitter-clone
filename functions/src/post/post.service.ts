@@ -223,6 +223,19 @@ export class PostService {
         throw new ForbiddenException('You can only delete your own posts');
       }
 
+      if (postData.photo) {
+        try {
+          const match = postData.photo.match(/\/o\/([^?]+)/);
+          if (match) {
+            const filePath = decodeURIComponent(match[1]);
+            await admin.storage().bucket().file(filePath).delete();
+            console.log(`Deleted photo from storage: ${filePath}`);
+          }
+        } catch (storageError) {
+          console.error('Error deleting photo from storage:', storageError);
+        }
+      }
+
       await this.postsCollection.doc(id).delete();
 
       return { message: 'Post deleted successfully' };
