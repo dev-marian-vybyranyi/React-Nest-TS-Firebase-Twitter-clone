@@ -83,8 +83,8 @@ export const PhotoUpload = ({
     type === "profile" ? "w-32 h-32 mx-auto" : "w-full h-auto";
   const imageClasses =
     type === "profile"
-      ? "rounded-full border-2 border-gray-200"
-      : "rounded-lg border border-gray-200";
+      ? "rounded-full border-2 border-gray-200 object-cover"
+      : "rounded-lg border border-gray-200 object-contain";
 
   return (
     <div className="space-y-4">
@@ -94,7 +94,7 @@ export const PhotoUpload = ({
             <img
               src={previewUrl}
               alt="Preview"
-              className={`w-full h-full object-cover ${imageClasses}`}
+              className={`w-full h-full max-h-86 ${imageClasses}`}
             />
             {fileName ? (
               <button

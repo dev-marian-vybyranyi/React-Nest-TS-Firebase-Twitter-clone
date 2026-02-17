@@ -22,7 +22,7 @@ const EditProfileDialog = () => {
           Edit profile
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-white">
+      <DialogContent className="bg-white" showCloseButton={false}>
         <DialogHeader>
           <DialogTitle>Edit profile</DialogTitle>
           <DialogDescription>Update your profile information</DialogDescription>

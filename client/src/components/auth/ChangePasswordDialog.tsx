@@ -22,7 +22,7 @@ const ChangePasswordDialog = () => {
           Change password
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-white">
+      <DialogContent className="bg-white" showCloseButton={false}>
         <DialogHeader>
           <DialogTitle>Change password</DialogTitle>
           <DialogDescription>Update your password</DialogDescription>

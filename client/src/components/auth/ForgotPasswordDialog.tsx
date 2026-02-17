@@ -50,7 +50,7 @@ const ForgotPasswordDialog = ({ trigger }: ForgotPasswordDialogProps) => {
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="bg-white">
+      <DialogContent className="bg-white" showCloseButton={false}>
         <DialogHeader>
           <DialogTitle>Reset Password</DialogTitle>
           <DialogDescription>
