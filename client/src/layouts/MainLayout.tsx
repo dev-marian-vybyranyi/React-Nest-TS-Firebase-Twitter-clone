@@ -9,7 +9,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
   return (
     <div className="relative flex min-h-screen flex-col bg-white">
       <Header />
-      <main className="h-screen bg-slate-100 py-6">
+      <main className="flex-1 bg-slate-100 py-6 pb-12">
         <div className="container mx-48">{children}</div>
       </main>
     </div>

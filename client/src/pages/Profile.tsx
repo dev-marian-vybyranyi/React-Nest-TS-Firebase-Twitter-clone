@@ -4,9 +4,14 @@ import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/useAuthStore";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { usePostStore } from "@/store/usePostStore";
+import { useEffect } from "react";
+import LoadingState from "@/components/LoadingState";
 
 const Profile = () => {
-  const { user, signOut, deleteUser, isLoading } = useAuthStore();
+  const { user, signOut, deleteUser, isLoading: authLoading } = useAuthStore();
+  const { posts, loading: postLoading, getAllPostsByUserId } = usePostStore();
+
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -70,6 +75,10 @@ const Profile = () => {
     return null;
   }
 
+  useEffect(() => {
+    getAllPostsByUserId(user.uid);
+  }, [getAllPostsByUserId, user.uid]);
+
   return (
     <div className="min-h-screen w-full bg-slate-100">
       <div className="mx-auto max-w-6xl grid gap-6 grid-cols-[350px_1fr]">
@@ -78,10 +87,10 @@ const Profile = () => {
             user={user}
             onSignOut={handleSignOut}
             onDeleteAccount={handleDeleteAccount}
-            isLoading={isLoading}
+            isLoading={authLoading}
           />
         </div>
-        <PostList posts={[]} />
+        {postLoading ? <LoadingState /> : <PostList posts={posts} />}
       </div>
     </div>
   );
