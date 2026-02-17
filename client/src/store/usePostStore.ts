@@ -12,6 +12,7 @@ interface PostState {
     postData: Omit<Post, "id" | "createdAt" | "updatedAt" | "userId">,
   ) => Promise<void>;
   updatePost: (postId: string, postData: Partial<Post>) => Promise<void>;
+  deletePost: (postId: string) => Promise<void>;
 }
 
 export const usePostStore = create<PostState>((set) => ({
@@ -67,6 +68,20 @@ export const usePostStore = create<PostState>((set) => ({
       }));
     } catch (error: any) {
       set({ loading: false, error: error.message || "Failed to update post" });
+      throw error;
+    }
+  },
+
+  deletePost: async (postId: string) => {
+    set({ loading: true, error: null });
+    try {
+      await api.delete(`/posts/${postId}`);
+      set((state) => ({
+        posts: state.posts.filter((post) => post.id !== postId),
+        loading: false,
+      }));
+    } catch (error: any) {
+      set({ loading: false, error: error.message || "Failed to delete post" });
       throw error;
     }
   },
