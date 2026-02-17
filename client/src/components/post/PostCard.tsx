@@ -1,17 +1,15 @@
 import { Card } from "@/components/ui/card";
-
-interface Post {
-  id: number;
-  title: string;
-  text: string;
-  photo?: string;
-}
+import type { Post } from "@/types/post";
 
 interface PostCardProps {
-  post: Post;
+  post?: Post;
 }
 
 const PostCard = ({ post }: PostCardProps) => {
+  if (!post) {
+    return null;
+  }
+
   return (
     <Card className="overflow-hidden shadow-sm bg-white pb-0">
       <div className="flex flex-col px-4 gap-4">

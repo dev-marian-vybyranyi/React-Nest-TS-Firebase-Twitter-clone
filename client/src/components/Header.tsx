@@ -18,7 +18,7 @@ const Header = () => {
         <div className="flex items-center justify-between space-x-2">
           {user ? (
             <nav className="flex items-center">
-              <Button variant="ghost" size="sm" className="px-0" asChild>
+              <Button variant="ghost" size="sm" className="px-0 gap-4" asChild>
                 <Link to="/profile">
                   <span>{user.name}</span>
                   {user.photo ? (

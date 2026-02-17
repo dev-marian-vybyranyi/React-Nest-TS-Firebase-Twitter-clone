@@ -1,3 +1,4 @@
+import PostList from "@/components/post/PostList";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useNavigate } from "react-router-dom";
 
@@ -6,15 +7,8 @@ const Home = () => {
   const navigate = useNavigate();
 
   return (
-    <div>
-      <h1>Home</h1>
-      <div className="App">
-        {user ? (
-          <div>Привіт, {user.email}!</div>
-        ) : (
-          <button onClick={() => navigate("/sign-in")}>Sign in</button>
-        )}
-      </div>
+    <div className="px-96">
+      <PostList posts={[]} />
     </div>
   );
 };

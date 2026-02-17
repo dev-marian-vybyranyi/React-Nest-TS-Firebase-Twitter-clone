@@ -1,7 +1,6 @@
 import PostList from "@/components/post/PostList";
 import ProfileCard from "@/components/profile/ProfileCard";
 import { Button } from "@/components/ui/button";
-import posts from "@/lib/posts";
 import { useAuthStore } from "@/store/useAuthStore";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -72,7 +71,7 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen w-full bg-slate-100 p-4">
+    <div className="min-h-screen w-full bg-slate-100">
       <div className="mx-auto max-w-6xl grid gap-6 grid-cols-[350px_1fr]">
         <div className="space-y-6">
           <ProfileCard
@@ -82,7 +81,7 @@ const Profile = () => {
             isLoading={isLoading}
           />
         </div>
-        <PostList posts={posts} />
+        <PostList posts={[]} />
       </div>
     </div>
   );
