@@ -1,7 +1,7 @@
 import axios from "axios";
 import { auth } from "../firebase";
 
-const BASE_URL = "http://127.0.0.1:5001/twitter-clone-6fb62/us-central1/api";
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 export const api = axios.create({
   baseURL: BASE_URL,
