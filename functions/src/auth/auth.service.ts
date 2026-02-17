@@ -140,6 +140,18 @@ export class AuthService {
     try {
       await admin.auth().deleteUser(uid);
       await admin.firestore().collection('users').doc(uid).delete();
+
+      const postsSnapshot = await admin
+        .firestore()
+        .collection('posts')
+        .where('userId', '==', uid)
+        .get();
+      const batch = admin.firestore().batch();
+      postsSnapshot.docs.forEach((doc) => {
+        batch.delete(doc.ref);
+      });
+      await batch.commit();
+
       return { message: 'User deleted successfully' };
     } catch (error) {
       throw new BadRequestException(error.message);
