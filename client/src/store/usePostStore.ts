@@ -12,6 +12,7 @@ interface PostState {
     limit?: number,
     append?: boolean,
     userId?: string,
+    searchText?: string,
   ) => Promise<void>;
   createPosts: (
     postData: Omit<Post, "id" | "createdAt" | "updatedAt" | "userId">,
@@ -27,7 +28,12 @@ export const usePostStore = create<PostState>((set) => ({
   loading: false,
   error: null,
 
-  fetchPosts: async (limit?: number, append?: boolean, userId?: string) => {
+  fetchPosts: async (
+    limit = 10,
+    append = false,
+    userId?: string,
+    searchText?: string,
+  ) => {
     const { lastDocId, loading, hasMore } = usePostStore.getState();
 
     if (append && (loading || !hasMore || !lastDocId)) return;
@@ -37,6 +43,10 @@ export const usePostStore = create<PostState>((set) => ({
     try {
       const baseUrl = userId ? `/posts/user/${userId}` : "/posts";
       let url = `${baseUrl}?limit=${limit}`;
+
+      if (searchText) {
+        url += `&search=${encodeURIComponent(searchText)}`;
+      }
 
       if (append && lastDocId) {
         url += `&lastDocId=${lastDocId}`;
