@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Request,
+  Query,
 } from '@nestjs/common';
 import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -25,8 +26,12 @@ export class PostController {
   }
 
   @Get()
-  findAll() {
-    return this.postService.findAll();
+  findAll(
+    @Query('limit') limit?: string,
+    @Query('lastDocId') lastDocId?: string,
+  ) {
+    const pageSize = limit ? parseInt(limit) : 10;
+    return this.postService.findAll(pageSize, lastDocId);
   }
 
   @Get('user/:userId')

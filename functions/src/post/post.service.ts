@@ -72,23 +72,46 @@ export class PostService {
     }
   }
 
-  async findAll(): Promise<Post[]> {
+  async findAll(
+    limit: number,
+    lastDocId?: string,
+  ): Promise<{ posts: Post[]; lastDocId: string | null; hasMore: boolean }> {
     try {
-      const postsSnapshot = await this.postsCollection
+      let query = this.postsCollection
         .orderBy('createdAt', 'desc')
-        .get();
+        .limit(limit + 1);
 
-      return postsSnapshot.docs.map((doc) => {
-        const postData = doc.data();
-        return {
-          id: doc.id,
-          ...postData,
-          createdAt:
-            postData.createdAt?.toDate?.()?.toISOString() || postData.createdAt,
-          updatedAt:
-            postData.updatedAt?.toDate?.()?.toISOString() || postData.updatedAt,
-        } as Post;
-      });
+      if (lastDocId) {
+        const lastDocSnapshot = await this.postsCollection.doc(lastDocId).get();
+        if (lastDocSnapshot.exists) {
+          query = query.startAfter(lastDocSnapshot);
+        }
+      }
+
+      const postsSnapshot = await query.get();
+
+      const hasMore = postsSnapshot.docs.length > limit;
+      const posts = postsSnapshot.docs
+        .slice(0, limit) // Беремо тільки limit документів
+        .map((doc) => {
+          const postData = doc.data();
+          return {
+            id: doc.id,
+            ...postData,
+            createdAt:
+              postData.createdAt?.toDate?.()?.toISOString() ||
+              postData.createdAt,
+            updatedAt:
+              postData.updatedAt?.toDate?.()?.toISOString() ||
+              postData.updatedAt,
+          } as Post;
+        });
+
+      // ID останнього документа для наступної сторінки
+      const lastDocIdResult =
+        posts.length > 0 ? posts[posts.length - 1].id : null;
+
+      return { posts, lastDocId: lastDocIdResult, hasMore };
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
