@@ -22,7 +22,7 @@ const createPostDialog = () => {
           Create post
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-white">
+      <DialogContent className="bg-white" showCloseButton={false}>
         <DialogHeader>
           <DialogTitle>Create post</DialogTitle>
           <DialogDescription>Create a new post</DialogDescription>
