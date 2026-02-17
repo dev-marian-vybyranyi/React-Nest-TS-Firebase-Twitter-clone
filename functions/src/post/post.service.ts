@@ -91,21 +91,17 @@ export class PostService {
       const postsSnapshot = await query.get();
 
       const hasMore = postsSnapshot.docs.length > limit;
-      const posts = postsSnapshot.docs
-        .slice(0, limit)
-        .map((doc) => {
-          const postData = doc.data();
-          return {
-            id: doc.id,
-            ...postData,
-            createdAt:
-              postData.createdAt?.toDate?.()?.toISOString() ||
-              postData.createdAt,
-            updatedAt:
-              postData.updatedAt?.toDate?.()?.toISOString() ||
-              postData.updatedAt,
-          } as Post;
-        });
+      const posts = postsSnapshot.docs.slice(0, limit).map((doc) => {
+        const postData = doc.data();
+        return {
+          id: doc.id,
+          ...postData,
+          createdAt:
+            postData.createdAt?.toDate?.()?.toISOString() || postData.createdAt,
+          updatedAt:
+            postData.updatedAt?.toDate?.()?.toISOString() || postData.updatedAt,
+        } as Post;
+      });
 
       const lastDocIdResult =
         posts.length > 0 ? posts[posts.length - 1].id : null;
@@ -214,6 +210,23 @@ export class PostService {
         ...updatePostDto,
         updatedAt: new Date(),
       };
+
+      if (
+        postData.photo &&
+        updatePostDto.photo !== undefined &&
+        postData.photo !== updatePostDto.photo
+      ) {
+        try {
+          const match = postData.photo.match(/\/o\/([^?]+)/);
+          if (match) {
+            const filePath = decodeURIComponent(match[1]);
+            await admin.storage().bucket().file(filePath).delete();
+            console.log(`Deleted old photo from storage: ${filePath}`);
+          }
+        } catch (storageError) {
+          console.error('Error deleting old photo from storage:', storageError);
+        }
+      }
 
       await this.postsCollection.doc(id).update(updateData);
       const updatedPostDoc = await this.postsCollection.doc(id).get();

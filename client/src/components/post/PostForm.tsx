@@ -20,6 +20,7 @@ const PostForm = ({ post, onSuccess, onCancel }: PostFormProps) => {
   const { createPosts, updatePost, loading: isPostLoading } = usePostStore();
   const { uploadPhoto, isUploading, resetUpload } = useUploadPhoto();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isPhotoRemoved, setIsPhotoRemoved] = useState(false);
 
   const isEditMode = !!post;
 
@@ -41,6 +42,8 @@ const PostForm = ({ post, onSuccess, onCancel }: PostFormProps) => {
         const path = `posts/${user.uid}/${Date.now()}_${selectedFile.name}`;
         const url = await uploadPhoto(selectedFile, path);
         if (url) photoUrl = url;
+      } else if (isPhotoRemoved) {
+        photoUrl = "";
       }
 
       if (isEditMode && post) {
@@ -93,14 +96,17 @@ const PostForm = ({ post, onSuccess, onCancel }: PostFormProps) => {
             currentPhotoUrl={post?.photo}
             onPhotoSelected={(file) => {
               setSelectedFile(file);
+              setIsPhotoRemoved(false);
             }}
             onPhotoCleared={() => {
               setSelectedFile(null);
               resetUpload();
+              setIsPhotoRemoved(true);
             }}
             onPhotoDeleted={() => {
               setSelectedFile(null);
               resetUpload();
+              setIsPhotoRemoved(true);
             }}
             isLoading={isUploading || isAuthLoading || isPostLoading}
           />
