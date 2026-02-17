@@ -6,4 +6,9 @@ export interface Post {
   userId: string;
   photo?: string;
   title?: string;
+  user?: {
+    name: string;
+    surname: string;
+    photo?: string;
+  };
 }

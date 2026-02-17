@@ -6,4 +6,9 @@ export class Post {
   userId: string;
   createdAt: Date;
   updatedAt: Date;
+  user?: {
+    name: string;
+    surname: string;
+    photo?: string;
+  };
 }

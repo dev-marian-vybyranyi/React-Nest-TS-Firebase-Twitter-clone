@@ -17,10 +17,26 @@ export class PostService {
 
   async create(createPostDto: CreatePostDto, userId: string): Promise<Post> {
     try {
+      const userDoc = await admin
+        .firestore()
+        .collection('users')
+        .doc(userId)
+        .get();
+      const userData = userDoc.data();
+
+      const user = userData
+        ? {
+            name: userData.name || '',
+            surname: userData.surname || '',
+            photo: userData.photo,
+          }
+        : null;
+
       const now = new Date();
       const postData = {
         ...createPostDto,
         userId,
+        user,
         createdAt: now,
         updatedAt: now,
       };
@@ -40,6 +56,7 @@ export class PostService {
         text: newPostData.text,
         photo: newPostData.photo,
         userId: newPostData.userId,
+        user: newPostData.user,
         createdAt: newPostData.createdAt,
         updatedAt: newPostData.updatedAt,
       } as Post;
@@ -203,6 +220,33 @@ export class PostService {
         throw error;
       }
       throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async updateUserInPosts(
+    userId: string,
+    userData: { name?: string; surname?: string; photo?: string },
+  ): Promise<void> {
+    try {
+      const postsSnapshot = await admin
+        .firestore()
+        .collection('posts')
+        .where('userId', '==', userId)
+        .get();
+
+      const batch = admin.firestore().batch();
+
+      postsSnapshot.docs.forEach((doc) => {
+        batch.update(doc.ref, {
+          'user.name': userData.name,
+          'user.surname': userData.surname,
+          'user.photo': userData.photo,
+        });
+      });
+
+      await batch.commit();
+    } catch (error) {
+      console.error('Error updating user data in posts:', error);
     }
   }
 }
