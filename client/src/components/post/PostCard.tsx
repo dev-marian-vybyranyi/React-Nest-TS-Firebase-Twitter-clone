@@ -1,8 +1,10 @@
 import { Card } from "@/components/ui/card";
+
 import { formatDate } from "@/lib/utils";
 import type { Post } from "@/types/post";
-import { EllipsisVertical, User } from "lucide-react";
+import { User } from "lucide-react";
 import { Link } from "react-router-dom";
+import PostDropdown from "./PostDropdown";
 
 interface PostCardProps {
   post?: Post;
@@ -38,7 +40,7 @@ const PostCard = ({ post }: PostCardProps) => {
           </Link>
           <p className="text-xs text-slate-500">{formatDate(post.createdAt)}</p>
         </div>
-        <EllipsisVertical className="w-5 h-5 text-slate-400" />
+        <PostDropdown postId={post.id} />
       </div>
 
       <div className="flex flex-col px-4">
