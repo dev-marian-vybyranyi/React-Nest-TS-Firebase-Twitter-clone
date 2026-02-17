@@ -1,4 +1,4 @@
-import PostList from "@/components/profile/PostList";
+import PostList from "@/components/post/PostList";
 import ProfileCard from "@/components/profile/ProfileCard";
 import { Button } from "@/components/ui/button";
 import posts from "@/lib/posts";
