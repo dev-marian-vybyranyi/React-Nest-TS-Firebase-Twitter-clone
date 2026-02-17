@@ -8,10 +8,11 @@ interface PostState {
   hasMore: boolean;
   loading: boolean;
   error: string | null;
-  getAllPosts: (limit?: number) => Promise<void>;
-  loadMorePosts: (limit?: number) => Promise<void>;
-  getAllPostsByUserId: (userId: string, limit?: number) => Promise<void>;
-  loadMorePostsByUserId: (userId: string, limit?: number) => Promise<void>;
+  fetchPosts: (
+    limit?: number,
+    append?: boolean,
+    userId?: string,
+  ) => Promise<void>;
   createPosts: (
     postData: Omit<Post, "id" | "createdAt" | "updatedAt" | "userId">,
   ) => Promise<void>;
@@ -26,36 +27,27 @@ export const usePostStore = create<PostState>((set) => ({
   loading: false,
   error: null,
 
-  getAllPosts: async (limit = 10) => {
-    set({ loading: true, error: null });
-    try {
-      const response = await api.get<PostsResponse>(`/posts?limit=${limit}`);
-      set({
-        posts: response.data.posts,
-        lastDocId: response.data.lastDocId,
-        hasMore: response.data.hasMore,
-        loading: false,
-      });
-    } catch (error: any) {
-      set({ loading: false, error: error.message || "Failed to fetch posts" });
-    }
-  },
-
-  loadMorePosts: async (limit = 10) => {
+  fetchPosts: async (limit?: number, append?: boolean, userId?: string) => {
     const { lastDocId, loading, hasMore } = usePostStore.getState();
 
-    if (loading) return;
-    if (!hasMore) return;
-    if (!lastDocId) return;
+    if (append && (loading || !hasMore || !lastDocId)) return;
 
-    set({ loading: true });
+    set({ loading: true, error: null });
+
     try {
-      const response = await api.get<PostsResponse>(
-        `/posts?limit=${limit}&lastDocId=${lastDocId}`,
-      );
+      const baseUrl = userId ? `/posts/user/${userId}` : "/posts";
+      let url = `${baseUrl}?limit=${limit}`;
+
+      if (append && lastDocId) {
+        url += `&lastDocId=${lastDocId}`;
+      }
+
+      const response = await api.get<PostsResponse>(url);
 
       set((state) => ({
-        posts: [...state.posts, ...response.data.posts],
+        posts: append
+          ? [...state.posts, ...response.data.posts]
+          : response.data.posts,
         lastDocId: response.data.lastDocId,
         hasMore: response.data.hasMore,
         loading: false,
@@ -63,51 +55,7 @@ export const usePostStore = create<PostState>((set) => ({
     } catch (error: any) {
       set({
         loading: false,
-        error: error.message || "Failed to load more posts",
-      });
-    }
-  },
-
-  getAllPostsByUserId: async (userId: string, limit = 10) => {
-    set({ loading: true, error: null });
-    try {
-      const response = await api.get<PostsResponse>(
-        `/posts/user/${userId}?limit=${limit}`,
-      );
-      set({
-        posts: response.data.posts,
-        lastDocId: response.data.lastDocId,
-        hasMore: response.data.hasMore,
-        loading: false,
-      });
-    } catch (error: any) {
-      set({ loading: false, error: error.message || "Failed to fetch posts" });
-    }
-  },
-
-  loadMorePostsByUserId: async (userId: string, limit = 10) => {
-    const { lastDocId, loading, hasMore } = usePostStore.getState();
-
-    if (loading) return;
-    if (!hasMore) return;
-    if (!lastDocId) return;
-
-    set({ loading: true });
-    try {
-      const response = await api.get<PostsResponse>(
-        `/posts/user/${userId}?limit=${limit}&lastDocId=${lastDocId}`,
-      );
-
-      set((state) => ({
-        posts: [...state.posts, ...response.data.posts],
-        lastDocId: response.data.lastDocId,
-        hasMore: response.data.hasMore,
-        loading: false,
-      }));
-    } catch (error: any) {
-      set({
-        loading: false,
-        error: error.message || "Failed to load more posts",
+        error: error.message || "Failed to fetch posts",
       });
     }
   },

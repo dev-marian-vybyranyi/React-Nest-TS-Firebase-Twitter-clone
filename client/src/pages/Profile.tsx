@@ -11,13 +11,7 @@ import { useUserStore } from "@/store/useUserStore";
 const Profile = () => {
   const { userId } = useParams<{ userId?: string }>();
   const { user: currentUser, isLoading: authLoading } = useAuthStore();
-  const {
-    posts,
-    loading: postLoading,
-    hasMore,
-    getAllPostsByUserId,
-    loadMorePostsByUserId,
-  } = usePostStore();
+  const { posts, loading: postLoading, hasMore, fetchPosts } = usePostStore();
   const {
     viewedUser,
     loading: userLoading,
@@ -41,9 +35,9 @@ const Profile = () => {
 
   useEffect(() => {
     if (targetUserId) {
-      getAllPostsByUserId(targetUserId, 10);
+      fetchPosts(5, false, targetUserId);
     }
-  }, [targetUserId, getAllPostsByUserId]);
+  }, [targetUserId, fetchPosts]);
 
   if (!currentUser) {
     navigate("/sign-in");
@@ -80,7 +74,7 @@ const Profile = () => {
             posts={posts}
             onLoadMore={() => {
               if (targetUserId) {
-                loadMorePostsByUserId(targetUserId, 10);
+                fetchPosts(5, true, targetUserId);
               }
             }}
             hasMore={hasMore}

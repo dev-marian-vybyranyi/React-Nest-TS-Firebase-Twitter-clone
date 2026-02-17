@@ -4,12 +4,11 @@ import { useEffect } from "react";
 import LoadingState from "@/components/LoadingState";
 
 const Home = () => {
-  const { posts, loading, hasMore, getAllPosts, loadMorePosts } =
-    usePostStore();
+  const { posts, loading, hasMore, fetchPosts } = usePostStore();
 
   useEffect(() => {
-    getAllPosts(10);
-  }, [getAllPosts]);
+    fetchPosts(5);
+  }, [fetchPosts]);
 
   if (loading && posts.length === 0) {
     return <LoadingState />;
@@ -19,7 +18,7 @@ const Home = () => {
     <div className="max-w-2xl mx-auto">
       <PostList
         posts={posts}
-        onLoadMore={loadMorePosts}
+        onLoadMore={() => fetchPosts(5, true)}
         hasMore={hasMore}
         isLoadingMore={loading && posts.length > 0}
       />
