@@ -11,7 +11,13 @@ import { useUserStore } from "@/store/useUserStore";
 const Profile = () => {
   const { userId } = useParams<{ userId?: string }>();
   const { user: currentUser, isLoading: authLoading } = useAuthStore();
-  const { posts, loading: postLoading, getAllPostsByUserId } = usePostStore();
+  const {
+    posts,
+    loading: postLoading,
+    hasMore,
+    getAllPostsByUserId,
+    loadMorePostsByUserId,
+  } = usePostStore();
   const {
     viewedUser,
     loading: userLoading,
@@ -22,8 +28,8 @@ const Profile = () => {
   const navigate = useNavigate();
 
   const isOwnProfile = !userId || userId === currentUser?.uid;
-
   const displayUser = isOwnProfile ? currentUser : viewedUser;
+  const targetUserId = displayUser?.uid;
 
   useEffect(() => {
     if (userId && userId !== currentUser?.uid) {
@@ -34,10 +40,10 @@ const Profile = () => {
   }, [userId, currentUser?.uid, getUserById, clearUser]);
 
   useEffect(() => {
-    if (displayUser?.uid) {
-      getAllPostsByUserId(displayUser.uid);
+    if (targetUserId) {
+      getAllPostsByUserId(targetUserId, 10);
     }
-  }, [displayUser?.uid, getAllPostsByUserId]);
+  }, [targetUserId, getAllPostsByUserId]);
 
   if (!currentUser) {
     navigate("/sign-in");
@@ -67,7 +73,20 @@ const Profile = () => {
             isLoading={authLoading}
           />
         </div>
-        {postLoading ? <LoadingState /> : <PostList posts={posts} />}
+        {postLoading && posts.length === 0 ? (
+          <LoadingState />
+        ) : (
+          <PostList
+            posts={posts}
+            onLoadMore={() => {
+              if (targetUserId) {
+                loadMorePostsByUserId(targetUserId, 10);
+              }
+            }}
+            hasMore={hasMore}
+            isLoadingMore={postLoading && posts.length > 0}
+          />
+        )}
       </div>
     </div>
   );

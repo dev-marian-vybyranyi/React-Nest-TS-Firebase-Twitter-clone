@@ -4,19 +4,25 @@ import { useEffect } from "react";
 import LoadingState from "@/components/LoadingState";
 
 const Home = () => {
-  const { posts, loading, getAllPosts } = usePostStore();
+  const { posts, loading, hasMore, getAllPosts, loadMorePosts } =
+    usePostStore();
 
   useEffect(() => {
-    getAllPosts();
+    getAllPosts(10);
   }, [getAllPosts]);
 
-  if (loading) {
+  if (loading && posts.length === 0) {
     return <LoadingState />;
   }
 
   return (
     <div className="max-w-2xl mx-auto">
-      <PostList posts={posts} />
+      <PostList
+        posts={posts}
+        onLoadMore={loadMorePosts}
+        hasMore={hasMore}
+        isLoadingMore={loading && posts.length > 0}
+      />
     </div>
   );
 };
