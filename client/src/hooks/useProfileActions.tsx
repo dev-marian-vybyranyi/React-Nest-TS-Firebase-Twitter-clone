@@ -1,0 +1,67 @@
+import { useAuthStore } from "@/store/useAuthStore";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
+import { Button } from "@/components/ui/button";
+
+export const useProfileActions = () => {
+  const { signOut, deleteUser } = useAuthStore();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast.success("Success sign out");
+      navigate("/sign-in");
+    } catch (error) {
+      console.error(error);
+      toast.error("Error signing out");
+    }
+  };
+
+  const handleDeleteAccount = () => {
+    toast(
+      (t) => (
+        <div className="flex flex-col gap-2">
+          <p className="font-medium text-sm">
+            Are you sure you want to delete your account?
+          </p>
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => toast.dismiss(t.id)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-red-500"
+              onClick={async () => {
+                toast.dismiss(t.id);
+                try {
+                  await deleteUser();
+                  toast.success("Account deleted");
+                  navigate("/sign-up");
+                } catch (error) {
+                  toast.error("Failed to delete account");
+                }
+              }}
+            >
+              Confirm
+            </Button>
+          </div>
+        </div>
+      ),
+      {
+        duration: Infinity,
+        position: "top-center",
+        style: {
+          minWidth: "300px",
+        },
+      },
+    );
+  };
+
+  return { handleSignOut, handleDeleteAccount };
+};

@@ -13,8 +13,8 @@ import EditProfileDialog from "./EditProfileDialog";
 
 interface ProfileCardProps {
   user: UserType;
-  onSignOut: () => Promise<void>;
-  onDeleteAccount: () => void;
+  onSignOut?: () => Promise<void>;
+  onDeleteAccount?: () => void;
   isLoading: boolean;
 }
 
@@ -44,26 +44,34 @@ const ProfileCard = ({
         <CardDescription className="text-sm">{user.email}</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
-        <EditProfileDialog />
-        <ChangePasswordDialog />
-        <Button
-          variant="outline"
-          className="w-full gap-2 justify-start pl-4"
-          onClick={onSignOut}
-          disabled={isLoading}
-        >
-          <LogOut className="h-4 w-4" />
-          Sign Out
-        </Button>
-        <Button
-          variant="destructive"
-          className="w-full gap-2 justify-start pl-4 bg-red-50 text-red-600 hover:bg-red-100 border-red-200"
-          onClick={onDeleteAccount}
-          disabled={isLoading}
-        >
-          <Trash2 className="h-4 w-4" />
-          Delete Account
-        </Button>
+        {onSignOut && (
+          <>
+            <EditProfileDialog />
+            <ChangePasswordDialog />
+          </>
+        )}
+        {onSignOut && (
+          <Button
+            variant="outline"
+            className="w-full gap-2 justify-start pl-4"
+            onClick={onSignOut}
+            disabled={isLoading}
+          >
+            <LogOut className="h-4 w-4" />
+            Sign Out
+          </Button>
+        )}
+        {onDeleteAccount && (
+          <Button
+            variant="destructive"
+            className="w-full gap-2 justify-start pl-4 bg-red-50 text-red-600 hover:bg-red-100 border-red-200"
+            onClick={onDeleteAccount}
+            disabled={isLoading}
+          >
+            <Trash2 className="h-4 w-4" />
+            Delete Account
+          </Button>
+        )}
       </CardContent>
     </Card>
   );
