@@ -4,9 +4,11 @@ import { CreateAuthDto } from './dto/create-auth.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
 import { SignInDto } from './dto/signIn.dto';
 import { Auth } from './entities/auth.entity';
+import { PostService } from '../post/post.service';
 
 @Injectable()
 export class AuthService {
+  constructor(private readonly postService: PostService) {}
   async signup(createAuthDto: CreateAuthDto) {
     const { email, password, name, surname, photo } = createAuthDto;
 
@@ -138,19 +140,43 @@ export class AuthService {
 
   async deleteUser(uid: string) {
     try {
-      await admin.auth().deleteUser(uid);
-      await admin.firestore().collection('users').doc(uid).delete();
+      const userDoc = await admin
+        .firestore()
+        .collection('users')
+        .doc(uid)
+        .get();
+      const userData = userDoc.data();
+
+      if (userData?.photo) {
+        try {
+          const match = userData.photo.match(/\/o\/([^?]+)/);
+          if (match) {
+            const filePath = decodeURIComponent(match[1]);
+            await admin.storage().bucket().file(filePath).delete();
+            console.log(`Deleted user profile photo: ${filePath}`);
+          }
+        } catch (error) {
+          console.error('Error deleting user profile photo:', error);
+        }
+      }
 
       const postsSnapshot = await admin
         .firestore()
         .collection('posts')
         .where('userId', '==', uid)
         .get();
-      const batch = admin.firestore().batch();
-      postsSnapshot.docs.forEach((doc) => {
-        batch.delete(doc.ref);
-      });
-      await batch.commit();
+
+      await Promise.all(
+        postsSnapshot.docs.map((doc) =>
+          this.postService.remove(doc.id, uid).catch((err) => {
+            console.error(`Failed to delete post ${doc.id}:`, err);
+          }),
+        ),
+      );
+
+      await admin.firestore().collection('users').doc(uid).delete();
+
+      await admin.auth().deleteUser(uid);
 
       return { message: 'User deleted successfully' };
     } catch (error) {
