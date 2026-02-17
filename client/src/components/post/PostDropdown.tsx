@@ -17,18 +17,21 @@ import { usePostStore } from "@/store/usePostStore";
 import { Edit2, EllipsisVertical, Trash2 } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import type { Post } from "@/types/post";
+import PostForm from "./PostForm";
 
 interface PostDropdownProps {
-  postId: string;
+  post: Post;
 }
 
-const PostDropdown = ({ postId }: PostDropdownProps) => {
+const PostDropdown = ({ post }: PostDropdownProps) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const deletePost = usePostStore((state) => state.deletePost);
 
   const handleDelete = async () => {
     try {
-      await deletePost(postId);
+      await deletePost(post.id);
       toast.success("Post deleted successfully");
       setShowDeleteDialog(false);
     } catch (error) {
@@ -45,16 +48,19 @@ const PostDropdown = ({ postId }: PostDropdownProps) => {
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuItem className="cursor-pointer">
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onClick={() => setShowEditDialog(true)}
+          >
             <Edit2 className="w-4 h-4 mr-2" />
-            Редагувати
+            Edit
           </DropdownMenuItem>
           <DropdownMenuItem
             className="cursor-pointer text-red-600"
             onClick={() => setShowDeleteDialog(true)}
           >
             <Trash2 className="w-4 h-4 mr-2" />
-            Видалити
+            Delete
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -82,6 +88,22 @@ const PostDropdown = ({ postId }: PostDropdownProps) => {
               Delete
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="bg-white p-6" showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>Edit Post</DialogTitle>
+            <DialogDescription>
+              Make changes to your post here. Click save when you're done.
+            </DialogDescription>
+          </DialogHeader>
+          <PostForm
+            post={post}
+            onSuccess={() => setShowEditDialog(false)}
+            onCancel={() => setShowEditDialog(false)}
+          />
         </DialogContent>
       </Dialog>
     </>

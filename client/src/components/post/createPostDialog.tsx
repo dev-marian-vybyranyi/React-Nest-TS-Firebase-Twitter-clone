@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import CreatePost from "./createPost";
+import PostForm from "./PostForm";
 import { useState } from "react";
 
 const createPostDialog = () => {
@@ -27,7 +27,7 @@ const createPostDialog = () => {
           <DialogTitle>Create post</DialogTitle>
           <DialogDescription>Create a new post</DialogDescription>
         </DialogHeader>
-        <CreatePost
+        <PostForm
           onSuccess={() => setOpen(false)}
           onCancel={() => setOpen(false)}
         />

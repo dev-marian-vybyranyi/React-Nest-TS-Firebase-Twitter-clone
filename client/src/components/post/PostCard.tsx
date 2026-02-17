@@ -44,7 +44,7 @@ const PostCard = ({ post }: PostCardProps) => {
           </Link>
           <p className="text-xs text-slate-500">{formatDate(post.createdAt)}</p>
         </div>
-        {isOwnPost && <PostDropdown postId={post.id} />}
+        {isOwnPost && <PostDropdown post={post} />}
       </div>
 
       <div className="flex flex-col px-4">
