@@ -264,11 +264,17 @@ export class PostService {
       const batch = admin.firestore().batch();
 
       postsSnapshot.docs.forEach((doc) => {
-        batch.update(doc.ref, {
-          'user.name': userData.name,
-          'user.surname': userData.surname,
-          'user.photo': userData.photo,
-        });
+        const updatePayload: any = {};
+        if (userData.name !== undefined)
+          updatePayload['user.name'] = userData.name;
+        if (userData.surname !== undefined)
+          updatePayload['user.surname'] = userData.surname;
+        if (userData.photo !== undefined)
+          updatePayload['user.photo'] = userData.photo;
+
+        if (Object.keys(updatePayload).length > 0) {
+          batch.update(doc.ref, updatePayload);
+        }
       });
 
       await batch.commit();

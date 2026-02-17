@@ -36,7 +36,13 @@ export class UserService {
     try {
       const updateData: Partial<User> = { ...updateUserDto };
 
-      await this.usersCollection.doc(id).update(updateData);
+      Object.keys(updateData).forEach(
+        (key) => updateData[key] === undefined && delete updateData[key],
+      );
+
+      if (Object.keys(updateData).length > 0) {
+        await this.usersCollection.doc(id).update(updateData);
+      }
 
       if (updateUserDto.name || updateUserDto.surname || updateUserDto.photo) {
         await this.postService.updateUserInPosts(id, {
@@ -48,6 +54,7 @@ export class UserService {
 
       return { message: 'User updated successfully', user: updateData };
     } catch (error) {
+      console.error('Error updating user:', error);
       throw new InternalServerErrorException(error.message);
     }
   }
