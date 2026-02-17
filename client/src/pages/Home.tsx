@@ -1,6 +1,5 @@
 import { useAuthStore } from "@/store/useAuthStore";
 import { useNavigate } from "react-router-dom";
-import CreatePost from "@/components/post/createPost";
 
 const Home = () => {
   const { user } = useAuthStore();
@@ -11,11 +10,7 @@ const Home = () => {
       <h1>Home</h1>
       <div className="App">
         {user ? (
-          <div>
-            <div>Привіт, {user.email}!</div>
-            <CreatePost />
-            <button onClick={() => navigate("/profile")}>Go to Profile</button>
-          </div>
+          <div>Привіт, {user.email}!</div>
         ) : (
           <button onClick={() => navigate("/sign-in")}>Sign in</button>
         )}

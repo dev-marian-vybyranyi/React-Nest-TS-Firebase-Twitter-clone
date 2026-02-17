@@ -8,7 +8,12 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { usePostStore } from "@/store/usePostStore";
 import { toast } from "react-hot-toast";
 
-const CreatePost = () => {
+interface CreatePostProps {
+  onSuccess?: () => void;
+  onCancel?: () => void;
+}
+
+const CreatePost = ({ onSuccess, onCancel }: CreatePostProps) => {
   const { user, isLoading: isAuthLoading } = useAuthStore();
   const { createPosts, loading: isPostCreating } = usePostStore();
   const { uploadPhoto, isUploading, resetUpload } = useUploadPhoto();
@@ -45,6 +50,7 @@ const CreatePost = () => {
       setSelectedFile(null);
       resetUpload();
       setUploadKey((prev) => prev + 1); //костиль для перезавантадення компоненту
+      onSuccess?.();
     } catch (error) {
       console.error("Failed to create post:", error);
     }
@@ -86,17 +92,28 @@ const CreatePost = () => {
             }}
             isLoading={isUploading || isAuthLoading || isPostCreating}
           />
-          <button
-            type="submit"
-            disabled={isUploading || isPostCreating || isSubmitting}
-            className="w-full bg-blue-500 text-white rounded-md py-2 px-4 hover:bg-blue-600 transition-colors disabled:bg-blue-300 disabled:cursor-not-allowed"
-          >
-            {isUploading
-              ? "Uploading..."
-              : isPostCreating
-                ? "Creating..."
-                : "Create Post"}
-          </button>
+          <div className="flex gap-2">
+            {onCancel && (
+              <button
+                type="button"
+                onClick={onCancel}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+              >
+                Cancel
+              </button>
+            )}
+            <button
+              type="submit"
+              disabled={isUploading || isPostCreating || isSubmitting}
+              className="flex-1 bg-blue-500 text-white rounded-md py-2 px-4 hover:bg-blue-600 transition-colors disabled:bg-blue-300 disabled:cursor-not-allowed"
+            >
+              {isUploading
+                ? "Uploading..."
+                : isPostCreating
+                  ? "Creating..."
+                  : "Create Post"}
+            </button>
+          </div>
         </Form>
       )}
     </Formik>

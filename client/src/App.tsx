@@ -9,6 +9,7 @@ import SignUp from "./pages/SignUp";
 import Profile from "./pages/Profile";
 import { useAuthStore } from "./store/useAuthStore";
 import { Toaster } from "react-hot-toast";
+import MainLayout from "./layouts/MainLayout";
 
 function App() {
   const { isLoading, setUser, setLoading } = useAuthStore();
@@ -45,10 +46,24 @@ function App() {
   return (
     <>
       <Routes>
-        <Route path="/" element={<Home />} />
         <Route path="/sign-up" element={<SignUp />} />
         <Route path="/sign-in" element={<SignIn />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route
+          path="/"
+          element={
+            <MainLayout>
+              <Home />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <MainLayout>
+              <Profile />
+            </MainLayout>
+          }
+        />
       </Routes>
       <Toaster />
     </>
