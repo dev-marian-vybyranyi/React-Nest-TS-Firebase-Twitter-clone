@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { formatDate } from "@/lib/utils";
 import type { Post } from "@/types/post";
-import { User } from "lucide-react";
+import { EllipsisVertical, User } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface PostCardProps {
@@ -38,6 +38,7 @@ const PostCard = ({ post }: PostCardProps) => {
           </Link>
           <p className="text-xs text-slate-500">{formatDate(post.createdAt)}</p>
         </div>
+        <EllipsisVertical className="w-5 h-5 text-slate-400" />
       </div>
 
       <div className="flex flex-col px-4">

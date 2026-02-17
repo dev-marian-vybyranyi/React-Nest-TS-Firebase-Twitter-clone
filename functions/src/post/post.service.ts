@@ -57,8 +57,12 @@ export class PostService {
         photo: newPostData.photo,
         userId: newPostData.userId,
         user: newPostData.user,
-        createdAt: newPostData.createdAt,
-        updatedAt: newPostData.updatedAt,
+        createdAt:
+          newPostData.createdAt?.toDate?.()?.toISOString() ||
+          newPostData.createdAt,
+        updatedAt:
+          newPostData.updatedAt?.toDate?.()?.toISOString() ||
+          newPostData.updatedAt,
       } as Post;
     } catch (error) {
       console.error('Error creating post:', error);
@@ -79,8 +83,10 @@ export class PostService {
         return {
           id: doc.id,
           ...postData,
-          createdAt: postData.createdAt,
-          updatedAt: postData.updatedAt,
+          createdAt:
+            postData.createdAt?.toDate?.()?.toISOString() || postData.createdAt,
+          updatedAt:
+            postData.updatedAt?.toDate?.()?.toISOString() || postData.updatedAt,
         } as Post;
       });
     } catch (error) {
@@ -105,8 +111,10 @@ export class PostService {
       return {
         id: postDoc.id,
         ...postData,
-        createdAt: postData.createdAt,
-        updatedAt: postData.updatedAt,
+        createdAt:
+          postData.createdAt?.toDate?.()?.toISOString() || postData.createdAt,
+        updatedAt:
+          postData.updatedAt?.toDate?.()?.toISOString() || postData.updatedAt,
       } as Post;
     } catch (error) {
       if (error instanceof NotFoundException) {
@@ -128,8 +136,10 @@ export class PostService {
         return {
           id: doc.id,
           ...postData,
-          createdAt: postData.createdAt,
-          updatedAt: postData.updatedAt,
+          createdAt:
+            postData.createdAt?.toDate?.()?.toISOString() || postData.createdAt,
+          updatedAt:
+            postData.updatedAt?.toDate?.()?.toISOString() || postData.updatedAt,
         } as Post;
       });
     } catch (error) {
@@ -177,8 +187,12 @@ export class PostService {
       return {
         id,
         ...updatedPostData,
-        createdAt: updatedPostData.createdAt,
-        updatedAt: updatedPostData.updatedAt,
+        createdAt:
+          updatedPostData.createdAt?.toDate?.()?.toISOString() ||
+          updatedPostData.createdAt,
+        updatedAt:
+          updatedPostData.updatedAt?.toDate?.()?.toISOString() ||
+          updatedPostData.updatedAt,
       } as Post;
     } catch (error) {
       if (
