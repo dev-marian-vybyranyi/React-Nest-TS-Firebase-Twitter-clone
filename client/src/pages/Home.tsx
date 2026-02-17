@@ -15,7 +15,7 @@ const Home = () => {
   }
 
   return (
-    <div className="px-96">
+    <div className="max-w-2xl mx-auto">
       <PostList posts={posts} />
     </div>
   );
