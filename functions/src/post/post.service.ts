@@ -92,7 +92,7 @@ export class PostService {
 
       const hasMore = postsSnapshot.docs.length > limit;
       const posts = postsSnapshot.docs
-        .slice(0, limit) // Беремо тільки limit документів
+        .slice(0, limit)
         .map((doc) => {
           const postData = doc.data();
           return {
@@ -107,7 +107,6 @@ export class PostService {
           } as Post;
         });
 
-      // ID останнього документа для наступної сторінки
       const lastDocIdResult =
         posts.length > 0 ? posts[posts.length - 1].id : null;
 
@@ -147,14 +146,28 @@ export class PostService {
     }
   }
 
-  async findByUserId(userId: string): Promise<Post[]> {
+  async findByUserId(
+    userId: string,
+    limit: number,
+    lastDocId?: string,
+  ): Promise<{ posts: Post[]; lastDocId: string | null; hasMore: boolean }> {
     try {
-      const postsSnapshot = await this.postsCollection
+      let query = this.postsCollection
         .where('userId', '==', userId)
         .orderBy('createdAt', 'desc')
-        .get();
+        .limit(limit + 1);
 
-      return postsSnapshot.docs.map((doc) => {
+      if (lastDocId) {
+        const lastDocSnapshot = await this.postsCollection.doc(lastDocId).get();
+        if (lastDocSnapshot.exists) {
+          query = query.startAfter(lastDocSnapshot);
+        }
+      }
+
+      const postsSnapshot = await query.get();
+
+      const hasMore = postsSnapshot.docs.length > limit;
+      const posts = postsSnapshot.docs.slice(0, limit).map((doc) => {
         const postData = doc.data();
         return {
           id: doc.id,
@@ -165,6 +178,11 @@ export class PostService {
             postData.updatedAt?.toDate?.()?.toISOString() || postData.updatedAt,
         } as Post;
       });
+
+      const lastDocIdResult =
+        posts.length > 0 ? posts[posts.length - 1].id : null;
+
+      return { posts, lastDocId: lastDocIdResult, hasMore };
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }

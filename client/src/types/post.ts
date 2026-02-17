@@ -12,3 +12,9 @@ export interface Post {
     photo?: string;
   };
 }
+
+export interface PostsResponse {
+  posts: Post[];
+  lastDocId: string | null;
+  hasMore: boolean;
+}

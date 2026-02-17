@@ -1,13 +1,17 @@
 import { create } from "zustand";
 import { api } from "@/api/axios";
-import type { Post } from "@/types/post";
+import type { Post, PostsResponse } from "@/types/post";
 
 interface PostState {
   posts: Post[];
+  lastDocId: string | null;
+  hasMore: boolean;
   loading: boolean;
   error: string | null;
-  getAllPosts: () => Promise<void>;
-  getAllPostsByUserId: (userId: string) => Promise<void>;
+  getAllPosts: (limit?: number) => Promise<void>;
+  loadMorePosts: (limit?: number) => Promise<void>;
+  getAllPostsByUserId: (userId: string, limit?: number) => Promise<void>;
+  loadMorePostsByUserId: (userId: string, limit?: number) => Promise<void>;
   createPosts: (
     postData: Omit<Post, "id" | "createdAt" | "updatedAt" | "userId">,
   ) => Promise<void>;
@@ -17,26 +21,94 @@ interface PostState {
 
 export const usePostStore = create<PostState>((set) => ({
   posts: [],
+  lastDocId: null,
+  hasMore: true,
   loading: false,
   error: null,
 
-  getAllPosts: async () => {
+  getAllPosts: async (limit = 10) => {
     set({ loading: true, error: null });
     try {
-      const response = await api.get("/posts");
-      set({ posts: response.data, loading: false });
+      const response = await api.get<PostsResponse>(`/posts?limit=${limit}`);
+      set({
+        posts: response.data.posts,
+        lastDocId: response.data.lastDocId,
+        hasMore: response.data.hasMore,
+        loading: false,
+      });
     } catch (error: any) {
       set({ loading: false, error: error.message || "Failed to fetch posts" });
     }
   },
 
-  getAllPostsByUserId: async (userId: string) => {
+  loadMorePosts: async (limit = 10) => {
+    const { lastDocId, loading, hasMore } = usePostStore.getState();
+
+    if (loading) return;
+    if (!hasMore) return;
+    if (!lastDocId) return;
+
+    set({ loading: true });
+    try {
+      const response = await api.get<PostsResponse>(
+        `/posts?limit=${limit}&lastDocId=${lastDocId}`,
+      );
+
+      set((state) => ({
+        posts: [...state.posts, ...response.data.posts],
+        lastDocId: response.data.lastDocId,
+        hasMore: response.data.hasMore,
+        loading: false,
+      }));
+    } catch (error: any) {
+      set({
+        loading: false,
+        error: error.message || "Failed to load more posts",
+      });
+    }
+  },
+
+  getAllPostsByUserId: async (userId: string, limit = 10) => {
     set({ loading: true, error: null });
     try {
-      const response = await api.get(`/posts/user/${userId}`);
-      set({ posts: response.data, loading: false });
+      const response = await api.get<PostsResponse>(
+        `/posts/user/${userId}?limit=${limit}`,
+      );
+      set({
+        posts: response.data.posts,
+        lastDocId: response.data.lastDocId,
+        hasMore: response.data.hasMore,
+        loading: false,
+      });
     } catch (error: any) {
       set({ loading: false, error: error.message || "Failed to fetch posts" });
+    }
+  },
+
+  loadMorePostsByUserId: async (userId: string, limit = 10) => {
+    const { lastDocId, loading, hasMore } = usePostStore.getState();
+
+    if (loading) return;
+    if (!hasMore) return;
+    if (!lastDocId) return;
+
+    set({ loading: true });
+    try {
+      const response = await api.get<PostsResponse>(
+        `/posts/user/${userId}?limit=${limit}&lastDocId=${lastDocId}`,
+      );
+
+      set((state) => ({
+        posts: [...state.posts, ...response.data.posts],
+        lastDocId: response.data.lastDocId,
+        hasMore: response.data.hasMore,
+        loading: false,
+      }));
+    } catch (error: any) {
+      set({
+        loading: false,
+        error: error.message || "Failed to load more posts",
+      });
     }
   },
 

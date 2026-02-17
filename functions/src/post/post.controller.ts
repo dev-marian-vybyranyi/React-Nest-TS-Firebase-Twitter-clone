@@ -35,8 +35,13 @@ export class PostController {
   }
 
   @Get('user/:userId')
-  findByUserId(@Param('userId') userId: string) {
-    return this.postService.findByUserId(userId);
+  findByUserId(
+    @Param('userId') userId: string,
+    @Query('limit') limit?: string,
+    @Query('lastDocId') lastDocId?: string,
+  ) {
+    const pageSize = limit ? parseInt(limit) : 10;
+    return this.postService.findByUserId(userId, pageSize, lastDocId);
   }
 
   @Get(':id')
