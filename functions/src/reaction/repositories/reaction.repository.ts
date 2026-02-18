@@ -25,6 +25,48 @@ export class ReactionRepository {
     await this.collection.doc(docId).delete();
   }
 
+  async deleteByPostId(postId: string): Promise<void> {
+    const batchSize = 500;
+    const query = this.collection
+      .where('postId', '==', postId)
+      .limit(batchSize);
+
+    while (true) {
+      const snapshot = await query.get();
+
+      if (snapshot.empty) {
+        break;
+      }
+
+      const batch = admin.firestore().batch();
+      snapshot.forEach((doc) => {
+        batch.delete(doc.ref);
+      });
+      await batch.commit();
+    }
+  }
+
+  async deleteByUserId(userId: string): Promise<void> {
+    const batchSize = 500;
+    const query = this.collection
+      .where('userId', '==', userId)
+      .limit(batchSize);
+
+    while (true) {
+      const snapshot = await query.get();
+
+      if (snapshot.empty) {
+        break;
+      }
+
+      const batch = admin.firestore().batch();
+      snapshot.forEach((doc) => {
+        batch.delete(doc.ref);
+      });
+      await batch.commit();
+    }
+  }
+
   async findOne(
     userId: string,
     postId: string,

@@ -5,19 +5,21 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { ReactionRepository } from '../reaction/repositories/reaction.repository';
+import { UserRepository } from '../user/repositories/user.repository';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { Post } from './entities/post.entity';
-import { PostRepository } from './repositories/post.repository';
-import { UserRepository } from '../user/repositories/user.repository';
 import { PostDeletedEvent } from './events/post-deleted.event';
 import { PostUpdatedEvent } from './events/post-updated.event';
+import { PostRepository } from './repositories/post.repository';
 
 @Injectable()
 export class PostService {
   constructor(
     private readonly postRepository: PostRepository,
     private readonly userRepository: UserRepository,
+    private readonly reactionRepository: ReactionRepository,
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
@@ -186,6 +188,7 @@ export class PostService {
       }
 
       await this.postRepository.delete(id);
+      await this.reactionRepository.deleteByPostId(id);
 
       return { message: 'Post deleted successfully' };
     } catch (error) {
