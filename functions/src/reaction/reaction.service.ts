@@ -17,6 +17,8 @@ export class ReactionService {
       await this.reactionRepository.delete(userId, postId);
       return;
     }
+
+    await this.reactionRepository.upsert({ userId, postId, type });
   }
 
   async remove(userId: string, postId: string): Promise<void> {
