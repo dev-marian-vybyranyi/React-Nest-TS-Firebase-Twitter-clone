@@ -14,6 +14,7 @@ import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { AuthGuard } from '../common/guards/auth.guard';
+import * as admin from 'firebase-admin';
 
 @Controller('posts')
 export class PostController {
@@ -26,27 +27,52 @@ export class PostController {
   }
 
   @Get()
-  findAll(
+  async findAll(
     @Query('limit') limit?: string,
     @Query('lastDocId') lastDocId?: string,
+    @Request() req?,
   ) {
     const pageSize = limit ? parseInt(limit) : 10;
-    return this.postService.findAll(pageSize, lastDocId);
+    const currentUserId = await this.getUserIdFromRequest(req);
+    return this.postService.findAll(pageSize, lastDocId, currentUserId);
   }
 
   @Get('user/:userId')
-  findByUserId(
+  async findByUserId(
     @Param('userId') userId: string,
     @Query('limit') limit?: string,
     @Query('lastDocId') lastDocId?: string,
+    @Request() req?,
   ) {
     const pageSize = limit ? parseInt(limit) : 10;
-    return this.postService.findByUserId(userId, pageSize, lastDocId);
+    const currentUserId = await this.getUserIdFromRequest(req);
+    return this.postService.findByUserId(
+      userId,
+      pageSize,
+      lastDocId,
+      currentUserId,
+    );
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.postService.findOne(id);
+  async findOne(@Param('id') id: string, @Request() req?) {
+    const currentUserId = await this.getUserIdFromRequest(req);
+    return this.postService.findOne(id, currentUserId);
+  }
+
+  private async getUserIdFromRequest(req: any): Promise<string | undefined> {
+    const authHeader = req?.headers?.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return undefined;
+    }
+
+    try {
+      const token = authHeader.split('Bearer ')[1];
+      const decodedToken = await admin.auth().verifyIdToken(token);
+      return decodedToken.uid;
+    } catch (error) {
+      return undefined;
+    }
   }
 
   @Patch(':id')

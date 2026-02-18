@@ -7,6 +7,7 @@ interface ReactionState {
   react: (postId: string, type: ReactionType) => Promise<void>;
   remove: (postId: string) => Promise<void>;
   fetchStats: (postId: string) => Promise<void>;
+  setReaction: (postId: string, reaction: PostReaction) => void;
 }
 
 export const useReactionStore = create<ReactionState>((set, get) => ({
@@ -80,6 +81,12 @@ export const useReactionStore = create<ReactionState>((set, get) => ({
     const response = await api.get(`/posts/${postId}/reactions`);
     set((state) => ({
       reactions: { ...state.reactions, [postId]: response.data },
+    }));
+  },
+
+  setReaction: (postId: string, reaction: PostReaction) => {
+    set((state) => ({
+      reactions: { ...state.reactions, [postId]: reaction },
     }));
   },
 }));

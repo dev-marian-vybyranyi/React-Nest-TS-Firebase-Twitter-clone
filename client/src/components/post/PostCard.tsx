@@ -66,7 +66,12 @@ const PostCard = ({ post }: PostCardProps) => {
         )}
       </div>
 
-      <ReactionBar postId={post.id} />
+      <ReactionBar
+        postId={post.id}
+        initialLikes={post.likes}
+        initialDislikes={post.dislikes}
+        initialUserReaction={post.userReaction}
+      />
     </Card>
   );
 };

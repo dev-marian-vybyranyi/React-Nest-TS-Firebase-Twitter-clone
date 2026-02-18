@@ -1,22 +1,43 @@
-import { useAuthStore } from "@/store/useAuthStore";
 import { useReactionStore } from "@/store/useReactionStore";
 import { ThumbsDown, ThumbsUp } from "lucide-react";
 import { useEffect } from "react";
 import { Button } from "../ui/button";
 
+import type { ReactionType } from "@/types/reaction";
+
 interface ReactionBarProps {
   postId: string;
+  initialLikes?: number;
+  initialDislikes?: number;
+  initialUserReaction?: ReactionType | null;
 }
 
-const ReactionBar = ({ postId }: ReactionBarProps) => {
-  const { reactions, react, fetchStats } = useReactionStore();
-  const { user } = useAuthStore();
+const ReactionBar = ({
+  postId,
+  initialLikes = 0,
+  initialDislikes = 0,
+  initialUserReaction = null,
+}: ReactionBarProps) => {
+  const { reactions, react, setReaction } = useReactionStore();
 
   const reaction = reactions[postId];
 
   useEffect(() => {
-    fetchStats(postId);
-  }, [postId, user?.uid]);
+    if (!reaction) {
+      setReaction(postId, {
+        likes: initialLikes,
+        dislikes: initialDislikes,
+        userReaction: initialUserReaction,
+      });
+    }
+  }, [
+    postId,
+    reaction,
+    initialLikes,
+    initialDislikes,
+    initialUserReaction,
+    setReaction,
+  ]);
 
   const isLiked = reaction?.userReaction === "like";
   const isDisliked = reaction?.userReaction === "dislike";
@@ -30,7 +51,7 @@ const ReactionBar = ({ postId }: ReactionBarProps) => {
         onClick={() => react(postId, "like")}
       >
         <ThumbsUp className={`h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
-        <span>{reaction?.likes ?? 0}</span>
+        <span>{reaction?.likes ?? initialLikes}</span>
       </Button>
 
       <Button
@@ -40,7 +61,7 @@ const ReactionBar = ({ postId }: ReactionBarProps) => {
         onClick={() => react(postId, "dislike")}
       >
         <ThumbsDown className={`h-4 w-4 ${isDisliked ? "fill-current" : ""}`} />
-        <span>{reaction?.dislikes ?? 0}</span>
+        <span>{reaction?.dislikes ?? initialDislikes}</span>
       </Button>
     </div>
   );

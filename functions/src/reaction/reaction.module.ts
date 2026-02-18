@@ -6,6 +6,6 @@ import { ReactionRepository } from './repositories/reaction.repository';
 @Module({
   controllers: [ReactionController],
   providers: [ReactionService, ReactionRepository],
-  exports: [ReactionRepository],
+  exports: [ReactionRepository, ReactionService],
 })
 export class ReactionModule {}

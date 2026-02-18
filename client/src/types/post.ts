@@ -11,6 +11,9 @@ export interface Post {
     surname: string;
     photo?: string;
   };
+  likes?: number;
+  dislikes?: number;
+  userReaction?: "like" | "dislike" | null;
 }
 
 export interface PostsResponse {
