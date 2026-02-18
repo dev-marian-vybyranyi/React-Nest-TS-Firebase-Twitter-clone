@@ -6,6 +6,7 @@ import { User } from "lucide-react";
 import { Link } from "react-router-dom";
 import PostDropdown from "./PostDropdown";
 import { useAuthStore } from "@/store/useAuthStore";
+import ReactionBar from "./ReactionBar";
 
 interface PostCardProps {
   post?: Post;
@@ -64,6 +65,8 @@ const PostCard = ({ post }: PostCardProps) => {
           />
         )}
       </div>
+
+      <ReactionBar postId={post.id} />
     </Card>
   );
 };
