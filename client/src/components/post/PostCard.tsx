@@ -21,7 +21,7 @@ const PostCard = ({ post }: PostCardProps) => {
   }
 
   return (
-    <Card className="overflow-hidden shadow-sm bg-white py-0 pt-4 gap-6">
+    <Card className="overflow-hidden shadow-sm bg-white py-4 gap-6">
       <div className="flex items-center gap-3 px-4">
         <Link to={`/profile/${post.userId}`} className="shrink-0">
           <div className="w-10 h-10 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center">

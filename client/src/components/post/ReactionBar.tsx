@@ -1,8 +1,8 @@
+import { useAuthStore } from "@/store/useAuthStore";
 import { useReactionStore } from "@/store/useReactionStore";
+import { ThumbsDown, ThumbsUp } from "lucide-react";
 import { useEffect } from "react";
 import { Button } from "../ui/button";
-import { ThumbsUp, ThumbsDown } from "lucide-react";
-import { useAuthStore } from "@/store/useAuthStore";
 
 interface ReactionBarProps {
   postId: string;
@@ -22,14 +22,25 @@ const ReactionBar = ({ postId }: ReactionBarProps) => {
   const isDisliked = reaction?.userReaction === "dislike";
 
   return (
-    <div>
-      <Button onClick={() => react(postId, "like")}>
-        {isLiked ? <ThumbsUp fill="#3b82f6" /> : <ThumbsUp />}
-        {reaction?.likes ?? 0}
+    <div className="flex items-center gap-2 mx-2">
+      <Button
+        variant="ghost"
+        size="sm"
+        className={`gap-2 ${isLiked ? "text-blue-600" : "text-slate-500"}`}
+        onClick={() => react(postId, "like")}
+      >
+        <ThumbsUp className={`h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
+        <span>{reaction?.likes ?? 0}</span>
       </Button>
-      <Button onClick={() => react(postId, "dislike")}>
-        {isDisliked ? <ThumbsDown fill="#3b82f6" /> : <ThumbsDown />}
-        {reaction?.dislikes ?? 0}
+
+      <Button
+        variant="ghost"
+        size="sm"
+        className={`gap-2 ${isDisliked ? "text-red-500" : "text-slate-500"}`}
+        onClick={() => react(postId, "dislike")}
+      >
+        <ThumbsDown className={`h-4 w-4 ${isDisliked ? "fill-current" : ""}`} />
+        <span>{reaction?.dislikes ?? 0}</span>
       </Button>
     </div>
   );
