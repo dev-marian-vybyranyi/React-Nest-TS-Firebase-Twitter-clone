@@ -1,14 +1,18 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import * as admin from 'firebase-admin';
+import { ReactionRepository } from 'src/reaction/repositories/reaction.repository';
+import { PostService } from '../post/post.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
 import { SignInDto } from './dto/signIn.dto';
 import { Auth } from './entities/auth.entity';
-import { PostService } from '../post/post.service';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly postService: PostService) {}
+  constructor(
+    private readonly postService: PostService,
+    private readonly reactionRepository: ReactionRepository,
+  ) {}
   async signup(createAuthDto: CreateAuthDto) {
     const { email, password, name, surname, photo } = createAuthDto;
 
@@ -175,7 +179,7 @@ export class AuthService {
       );
 
       await admin.firestore().collection('users').doc(uid).delete();
-
+      await this.reactionRepository.deleteByUserId(uid);
       await admin.auth().deleteUser(uid);
 
       return { message: 'User deleted successfully' };
