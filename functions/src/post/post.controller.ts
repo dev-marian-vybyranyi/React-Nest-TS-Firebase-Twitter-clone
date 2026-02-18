@@ -14,7 +14,6 @@ import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { AuthGuard } from '../common/guards/auth.guard';
-import * as admin from 'firebase-admin';
 
 @Controller('posts')
 export class PostController {
@@ -27,52 +26,37 @@ export class PostController {
   }
 
   @Get()
-  async findAll(
+  @UseGuards(AuthGuard)
+  findAll(
     @Query('limit') limit?: string,
     @Query('lastDocId') lastDocId?: string,
     @Request() req?,
   ) {
     const pageSize = limit ? parseInt(limit) : 10;
-    const currentUserId = await this.getUserIdFromRequest(req);
-    return this.postService.findAll(pageSize, lastDocId, currentUserId);
+    return this.postService.findAll(pageSize, lastDocId, req.user.uid);
   }
 
   @Get('user/:userId')
-  async findByUserId(
+  @UseGuards(AuthGuard)
+  findByUserId(
     @Param('userId') userId: string,
     @Query('limit') limit?: string,
     @Query('lastDocId') lastDocId?: string,
     @Request() req?,
   ) {
     const pageSize = limit ? parseInt(limit) : 10;
-    const currentUserId = await this.getUserIdFromRequest(req);
     return this.postService.findByUserId(
       userId,
       pageSize,
       lastDocId,
-      currentUserId,
+      req.user.uid,
     );
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string, @Request() req?) {
-    const currentUserId = await this.getUserIdFromRequest(req);
-    return this.postService.findOne(id, currentUserId);
-  }
-
-  private async getUserIdFromRequest(req: any): Promise<string | undefined> {
-    const authHeader = req?.headers?.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return undefined;
-    }
-
-    try {
-      const token = authHeader.split('Bearer ')[1];
-      const decodedToken = await admin.auth().verifyIdToken(token);
-      return decodedToken.uid;
-    } catch (error) {
-      return undefined;
-    }
+  @UseGuards(AuthGuard)
+  findOne(@Param('id') id: string, @Request() req?) {
+    return this.postService.findOne(id, req.user.uid);
   }
 
   @Patch(':id')
