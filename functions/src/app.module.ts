@@ -4,9 +4,17 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { PostModule } from './post/post.module';
+import { StorageModule } from './storage/storage.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
-  imports: [AuthModule, UserModule, PostModule],
+  imports: [
+    AuthModule,
+    UserModule,
+    PostModule,
+    StorageModule,
+    EventEmitterModule.forRoot(),
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

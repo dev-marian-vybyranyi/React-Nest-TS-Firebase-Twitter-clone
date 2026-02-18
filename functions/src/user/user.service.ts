@@ -3,24 +3,25 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import * as admin from 'firebase-admin';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { PostService } from '../post/post.service';
+import { UserRepository } from './repositories/user.repository';
 
 @Injectable()
 export class UserService {
-  private readonly usersCollection = admin.firestore().collection('users');
-
-  constructor(private readonly postService: PostService) {}
+  constructor(
+    private readonly postService: PostService,
+    private readonly userRepository: UserRepository,
+  ) {}
 
   async getUserById(id: string): Promise<User> {
     try {
-      const userDoc = await this.usersCollection.doc(id).get();
-      if (!userDoc.exists) {
+      const user = await this.userRepository.findOne(id);
+      if (!user) {
         throw new NotFoundException('User not found');
       }
-      return { id: userDoc.id, ...userDoc.data() } as User;
+      return user as User;
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
@@ -41,7 +42,7 @@ export class UserService {
       );
 
       if (Object.keys(updateData).length > 0) {
-        await this.usersCollection.doc(id).update(updateData);
+        await this.userRepository.updateUser(id, updateData);
       }
 
       if (updateUserDto.name || updateUserDto.surname || updateUserDto.photo) {
@@ -54,7 +55,6 @@ export class UserService {
 
       return { message: 'User updated successfully', user: updateData };
     } catch (error) {
-      console.error('Error updating user:', error);
       throw new InternalServerErrorException(error.message);
     }
   }

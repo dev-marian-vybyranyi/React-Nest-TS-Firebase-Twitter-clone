@@ -4,25 +4,26 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import * as admin from 'firebase-admin';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { Post } from './entities/post.entity';
+import { PostRepository } from './repositories/post.repository';
+import { UserRepository } from '../user/repositories/user.repository';
+import { PostDeletedEvent } from './events/post-deleted.event';
+import { PostUpdatedEvent } from './events/post-updated.event';
 
 @Injectable()
 export class PostService {
-  private get postsCollection() {
-    return admin.firestore().collection('posts');
-  }
+  constructor(
+    private readonly postRepository: PostRepository,
+    private readonly userRepository: UserRepository,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
 
   async create(createPostDto: CreatePostDto, userId: string): Promise<Post> {
     try {
-      const userDoc = await admin
-        .firestore()
-        .collection('users')
-        .doc(userId)
-        .get();
-      const userData = userDoc.data();
+      const userData = await this.userRepository.findOne(userId);
 
       const user = userData
         ? {
@@ -30,7 +31,7 @@ export class PostService {
             surname: userData.surname || '',
             photo: userData.photo,
           }
-        : null;
+        : undefined;
 
       const now = new Date();
       const postData = {
@@ -41,29 +42,9 @@ export class PostService {
         updatedAt: now,
       };
 
-      const postRef = await this.postsCollection.add(postData);
-      const postDoc = await postRef.get();
+      const newPostData = await this.postRepository.create(postData);
 
-      const newPostData = postDoc.data();
-
-      if (!newPostData) {
-        throw new InternalServerErrorException('Failed to create post');
-      }
-
-      return {
-        id: postRef.id,
-        title: newPostData.title,
-        text: newPostData.text,
-        photo: newPostData.photo,
-        userId: newPostData.userId,
-        user: newPostData.user,
-        createdAt:
-          newPostData.createdAt?.toDate?.()?.toISOString() ||
-          newPostData.createdAt,
-        updatedAt:
-          newPostData.updatedAt?.toDate?.()?.toISOString() ||
-          newPostData.updatedAt,
-      } as Post;
+      return newPostData;
     } catch (error) {
       console.error('Error creating post:', error);
       throw new InternalServerErrorException(
@@ -77,31 +58,10 @@ export class PostService {
     lastDocId?: string,
   ): Promise<{ posts: Post[]; lastDocId: string | null; hasMore: boolean }> {
     try {
-      let query = this.postsCollection
-        .orderBy('createdAt', 'desc')
-        .limit(limit + 1);
+      const { docs } = await this.postRepository.findAll(limit, lastDocId);
 
-      if (lastDocId) {
-        const lastDocSnapshot = await this.postsCollection.doc(lastDocId).get();
-        if (lastDocSnapshot.exists) {
-          query = query.startAfter(lastDocSnapshot);
-        }
-      }
-
-      const postsSnapshot = await query.get();
-
-      const hasMore = postsSnapshot.docs.length > limit;
-      const posts = postsSnapshot.docs.slice(0, limit).map((doc) => {
-        const postData = doc.data();
-        return {
-          id: doc.id,
-          ...postData,
-          createdAt:
-            postData.createdAt?.toDate?.()?.toISOString() || postData.createdAt,
-          updatedAt:
-            postData.updatedAt?.toDate?.()?.toISOString() || postData.updatedAt,
-        } as Post;
-      });
+      const hasMore = docs.length > limit;
+      const posts = docs.slice(0, limit);
 
       const lastDocIdResult =
         posts.length > 0 ? posts[posts.length - 1].id : null;
@@ -114,26 +74,13 @@ export class PostService {
 
   async findOne(id: string): Promise<Post> {
     try {
-      const postDoc = await this.postsCollection.doc(id).get();
+      const post = await this.postRepository.findOne(id);
 
-      if (!postDoc.exists) {
+      if (!post) {
         throw new NotFoundException('Post not found');
       }
 
-      const postData = postDoc.data();
-
-      if (!postData) {
-        throw new NotFoundException('Post data not found');
-      }
-
-      return {
-        id: postDoc.id,
-        ...postData,
-        createdAt:
-          postData.createdAt?.toDate?.()?.toISOString() || postData.createdAt,
-        updatedAt:
-          postData.updatedAt?.toDate?.()?.toISOString() || postData.updatedAt,
-      } as Post;
+      return post;
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
@@ -148,32 +95,14 @@ export class PostService {
     lastDocId?: string,
   ): Promise<{ posts: Post[]; lastDocId: string | null; hasMore: boolean }> {
     try {
-      let query = this.postsCollection
-        .where('userId', '==', userId)
-        .orderBy('createdAt', 'desc')
-        .limit(limit + 1);
+      const { docs } = await this.postRepository.findByUserId(
+        userId,
+        limit,
+        lastDocId,
+      );
 
-      if (lastDocId) {
-        const lastDocSnapshot = await this.postsCollection.doc(lastDocId).get();
-        if (lastDocSnapshot.exists) {
-          query = query.startAfter(lastDocSnapshot);
-        }
-      }
-
-      const postsSnapshot = await query.get();
-
-      const hasMore = postsSnapshot.docs.length > limit;
-      const posts = postsSnapshot.docs.slice(0, limit).map((doc) => {
-        const postData = doc.data();
-        return {
-          id: doc.id,
-          ...postData,
-          createdAt:
-            postData.createdAt?.toDate?.()?.toISOString() || postData.createdAt,
-          updatedAt:
-            postData.updatedAt?.toDate?.()?.toISOString() || postData.updatedAt,
-        } as Post;
-      });
+      const hasMore = docs.length > limit;
+      const posts = docs.slice(0, limit);
 
       const lastDocIdResult =
         posts.length > 0 ? posts[posts.length - 1].id : null;
@@ -190,19 +119,13 @@ export class PostService {
     userId: string,
   ): Promise<Post> {
     try {
-      const postDoc = await this.postsCollection.doc(id).get();
+      const post = await this.postRepository.findOne(id);
 
-      if (!postDoc.exists) {
+      if (!post) {
         throw new NotFoundException('Post not found');
       }
 
-      const postData = postDoc.data();
-
-      if (!postData) {
-        throw new NotFoundException('Post data not found');
-      }
-
-      if (postData.userId !== userId) {
+      if (post.userId !== userId) {
         throw new ForbiddenException('You can only update your own posts');
       }
 
@@ -212,42 +135,26 @@ export class PostService {
       };
 
       if (
-        postData.photo &&
+        post.photo &&
         updatePostDto.photo !== undefined &&
-        postData.photo !== updatePostDto.photo
+        post.photo !== updatePostDto.photo
       ) {
-        try {
-          const match = postData.photo.match(/\/o\/([^?]+)/);
-          if (match) {
-            const filePath = decodeURIComponent(match[1]);
-            await admin.storage().bucket().file(filePath).delete();
-            console.log(`Deleted old photo from storage: ${filePath}`);
-          }
-        } catch (storageError) {
-          console.error('Error deleting old photo from storage:', storageError);
-        }
+        this.eventEmitter.emit(
+          'post.updated',
+          new PostUpdatedEvent(post.photo),
+        );
       }
 
-      await this.postsCollection.doc(id).update(updateData);
-      const updatedPostDoc = await this.postsCollection.doc(id).get();
-      const updatedPostData = updatedPostDoc.data();
+      await this.postRepository.update(id, updateData);
+      const updatedPost = await this.postRepository.findOne(id);
 
-      if (!updatedPostData) {
+      if (!updatedPost) {
         throw new InternalServerErrorException(
           'Failed to retrieve updated post',
         );
       }
 
-      return {
-        id,
-        ...updatedPostData,
-        createdAt:
-          updatedPostData.createdAt?.toDate?.()?.toISOString() ||
-          updatedPostData.createdAt,
-        updatedAt:
-          updatedPostData.updatedAt?.toDate?.()?.toISOString() ||
-          updatedPostData.updatedAt,
-      } as Post;
+      return updatedPost;
     } catch (error) {
       if (
         error instanceof NotFoundException ||
@@ -261,36 +168,24 @@ export class PostService {
 
   async remove(id: string, userId: string) {
     try {
-      const postDoc = await this.postsCollection.doc(id).get();
+      const post = await this.postRepository.findOne(id);
 
-      if (!postDoc.exists) {
+      if (!post) {
         throw new NotFoundException('Post not found');
       }
 
-      const postData = postDoc.data();
-
-      if (!postData) {
-        throw new NotFoundException('Post data not found');
-      }
-
-      if (postData.userId !== userId) {
+      if (post.userId !== userId) {
         throw new ForbiddenException('You can only delete your own posts');
       }
 
-      if (postData.photo) {
-        try {
-          const match = postData.photo.match(/\/o\/([^?]+)/);
-          if (match) {
-            const filePath = decodeURIComponent(match[1]);
-            await admin.storage().bucket().file(filePath).delete();
-            console.log(`Deleted photo from storage: ${filePath}`);
-          }
-        } catch (storageError) {
-          console.error('Error deleting photo from storage:', storageError);
-        }
+      if (post.photo) {
+        this.eventEmitter.emit(
+          'post.deleted',
+          new PostDeletedEvent(post.photo),
+        );
       }
 
-      await this.postsCollection.doc(id).delete();
+      await this.postRepository.delete(id);
 
       return { message: 'Post deleted successfully' };
     } catch (error) {
@@ -309,31 +204,7 @@ export class PostService {
     userData: { name?: string; surname?: string; photo?: string },
   ): Promise<void> {
     try {
-      const postsSnapshot = await admin
-        .firestore()
-        .collection('posts')
-        .where('userId', '==', userId)
-        .get();
-
-      const batch = admin.firestore().batch();
-
-      postsSnapshot.docs.forEach((doc) => {
-        const updatePayload: any = {};
-        if (userData.name !== undefined)
-          updatePayload['user.name'] = userData.name;
-        if (userData.surname !== undefined)
-          updatePayload['user.surname'] = userData.surname;
-        if (userData.photo !== undefined)
-          updatePayload['user.photo'] = userData.photo;
-
-        if (Object.keys(updatePayload).length > 0) {
-          batch.update(doc.ref, updatePayload);
-        }
-      });
-
-      await batch.commit();
-    } catch (error) {
-      console.error('Error updating user data in posts:', error);
-    }
+      await this.postRepository.updateUserInPosts(userId, userData);
+    } catch (error) {}
   }
 }
