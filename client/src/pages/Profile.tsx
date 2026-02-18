@@ -18,7 +18,7 @@ const Profile = () => {
     getUserById,
     clearUser,
   } = useUserStore();
-  const { handleSignOut, handleDeleteAccount } = useProfileActions();
+  const { handleSignOut } = useProfileActions();
   const navigate = useNavigate();
 
   const isOwnProfile = !userId || userId === currentUser?.uid;
@@ -63,7 +63,6 @@ const Profile = () => {
           <ProfileCard
             user={displayUser}
             onSignOut={isOwnProfile ? handleSignOut : undefined}
-            onDeleteAccount={isOwnProfile ? handleDeleteAccount : undefined}
             isLoading={authLoading}
           />
         </div>

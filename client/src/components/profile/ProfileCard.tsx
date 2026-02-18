@@ -6,25 +6,20 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import type { User as UserType } from "@/types/user";
-import { LogOut, Trash2, User } from "lucide-react";
-import ChangePasswordDialog from "../auth/ChangePasswordDialog";
-import EditProfileDialog from "./EditProfileDialog";
 import { auth } from "@/firebase";
+import type { User as UserType } from "@/types/user";
+import { LogOut, User } from "lucide-react";
+import ChangePasswordDialog from "../auth/ChangePasswordDialog";
+import DeleteProfileDialog from "./DeleteProfileDialog";
+import EditProfileDialog from "./EditProfileDialog";
 
 interface ProfileCardProps {
   user: UserType;
   onSignOut?: () => Promise<void>;
-  onDeleteAccount?: () => void;
   isLoading: boolean;
 }
 
-const ProfileCard = ({
-  user,
-  onSignOut,
-  onDeleteAccount,
-  isLoading,
-}: ProfileCardProps) => {
+const ProfileCard = ({ user, onSignOut, isLoading }: ProfileCardProps) => {
   const providerData = auth.currentUser?.providerData[0];
 
   return (
@@ -66,17 +61,7 @@ const ProfileCard = ({
             Sign Out
           </Button>
         )}
-        {onDeleteAccount && (
-          <Button
-            variant="destructive"
-            className="w-full gap-2 justify-start pl-4 bg-red-50 text-red-600 hover:bg-red-100 border-red-200"
-            onClick={onDeleteAccount}
-            disabled={isLoading}
-          >
-            <Trash2 className="h-4 w-4" />
-            Delete Account
-          </Button>
-        )}
+        {onSignOut && <DeleteProfileDialog />}
       </CardContent>
     </Card>
   );
