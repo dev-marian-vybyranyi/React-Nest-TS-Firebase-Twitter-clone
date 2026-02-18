@@ -10,6 +10,7 @@ import type { User as UserType } from "@/types/user";
 import { LogOut, Trash2, User } from "lucide-react";
 import ChangePasswordDialog from "../auth/ChangePasswordDialog";
 import EditProfileDialog from "./EditProfileDialog";
+import { auth } from "@/firebase";
 
 interface ProfileCardProps {
   user: UserType;
@@ -24,6 +25,8 @@ const ProfileCard = ({
   onDeleteAccount,
   isLoading,
 }: ProfileCardProps) => {
+  const providerData = auth.currentUser?.providerData[0];
+
   return (
     <Card className="shadow-lg bg-white">
       <CardHeader className="pb-2">
@@ -47,7 +50,9 @@ const ProfileCard = ({
         {onSignOut && (
           <>
             <EditProfileDialog />
-            <ChangePasswordDialog />
+            {providerData?.providerId === "password" && (
+              <ChangePasswordDialog />
+            )}
           </>
         )}
         {onSignOut && (
