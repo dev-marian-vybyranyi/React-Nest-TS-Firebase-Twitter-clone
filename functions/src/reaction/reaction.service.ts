@@ -1,0 +1,39 @@
+import { Injectable } from '@nestjs/common';
+import { ReactionRepository } from './repositories/reaction.repository';
+import { ReactionEntity, ReactionType } from './entities/reaction.entity';
+
+@Injectable()
+export class ReactionService {
+  constructor(private readonly reactionRepository: ReactionRepository) {}
+
+  async react(
+    userId: string,
+    postId: string,
+    type: ReactionType,
+  ): Promise<void> {
+    const existing = await this.reactionRepository.findOne(userId, postId);
+
+    if (existing?.type === type) {
+      await this.reactionRepository.delete(userId, postId);
+      return;
+    }
+  }
+
+  async remove(userId: string, postId: string): Promise<void> {
+    await this.reactionRepository.delete(userId, postId);
+  }
+
+  async getPostStats(
+    postId: string,
+  ): Promise<{ likes: number; dislikes: number }> {
+    const likes = await this.reactionRepository.countByPostAndType(
+      postId,
+      'like',
+    );
+    const dislikes = await this.reactionRepository.countByPostAndType(
+      postId,
+      'dislike',
+    );
+    return { likes, dislikes };
+  }
+}

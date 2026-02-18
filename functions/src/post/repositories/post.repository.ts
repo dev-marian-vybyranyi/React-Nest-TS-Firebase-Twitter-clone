@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import * as admin from 'firebase-admin';
 import { Post } from '../entities/post.entity';
-import { CreatePostDto } from '../dto/create-post.dto';
-import { UpdatePostDto } from '../dto/update-post.dto';
 
 @Injectable()
 export class PostRepository {
