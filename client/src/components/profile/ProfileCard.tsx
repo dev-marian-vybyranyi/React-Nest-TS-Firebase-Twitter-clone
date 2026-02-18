@@ -6,9 +6,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import ConfirmationDialog from "@/components/ui/confirmation-dialog";
 import { auth } from "@/firebase";
 import type { User as UserType } from "@/types/user";
 import { LogOut, User } from "lucide-react";
+import { useState } from "react";
 import ChangePasswordDialog from "../auth/ChangePasswordDialog";
 import DeleteProfileDialog from "./DeleteProfileDialog";
 import EditProfileDialog from "./EditProfileDialog";
@@ -20,6 +22,7 @@ interface ProfileCardProps {
 }
 
 const ProfileCard = ({ user, onSignOut, isLoading }: ProfileCardProps) => {
+  const [showSignOutDialog, setShowSignOutDialog] = useState(false);
   const providerData = auth.currentUser?.providerData[0];
 
   return (
@@ -51,15 +54,27 @@ const ProfileCard = ({ user, onSignOut, isLoading }: ProfileCardProps) => {
           </>
         )}
         {onSignOut && (
-          <Button
-            variant="outline"
-            className="w-full gap-2 justify-start pl-4"
-            onClick={onSignOut}
-            disabled={isLoading}
-          >
-            <LogOut className="h-4 w-4" />
-            Sign Out
-          </Button>
+          <>
+            <Button
+              variant="outline"
+              className="w-full gap-2 justify-start pl-4"
+              onClick={() => setShowSignOutDialog(true)}
+              disabled={isLoading}
+            >
+              <LogOut className="h-4 w-4" />
+              Sign Out
+            </Button>
+            <ConfirmationDialog
+              open={showSignOutDialog}
+              onOpenChange={setShowSignOutDialog}
+              title="Sign out"
+              description="Are you sure you want to sign out?"
+              confirmLabel="Sign Out"
+              onConfirm={onSignOut}
+              variant="default"
+              buttonDisabled={isLoading}
+            />
+          </>
         )}
         {onSignOut && <DeleteProfileDialog />}
       </CardContent>

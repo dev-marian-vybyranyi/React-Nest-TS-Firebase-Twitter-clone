@@ -1,8 +1,8 @@
+import ConfirmationDialog from "@/components/ui/confirmation-dialog";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -12,12 +12,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
+
 import { usePostStore } from "@/store/usePostStore";
+import type { Post } from "@/types/post";
 import { Edit2, EllipsisVertical, Trash2 } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import type { Post } from "@/types/post";
 import PostForm from "./PostForm";
 
 interface PostDropdownProps {
@@ -65,31 +65,15 @@ const PostDropdown = ({ post }: PostDropdownProps) => {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent className="bg-white" showCloseButton={false}>
-          <DialogHeader>
-            <DialogTitle>Are you sure?</DialogTitle>
-            <DialogDescription>
-              This action is irreversible. The post will be permanently deleted.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setShowDeleteDialog(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="outline"
-              onClick={handleDelete}
-              className="text-red-600"
-            >
-              Delete
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmationDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        title="Are you sure?"
+        description="This action is irreversible. The post will be permanently deleted."
+        confirmLabel="Delete"
+        onConfirm={handleDelete}
+        variant="destructive"
+      />
 
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
         <DialogContent className="bg-white p-6" showCloseButton={false}>
