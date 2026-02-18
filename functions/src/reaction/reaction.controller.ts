@@ -15,8 +15,9 @@ export class ReactionController {
   constructor(private readonly reactionService: ReactionService) {}
 
   @Get()
-  getStats(@Param('postId') postId: string) {
-    return this.reactionService.getPostStats(postId);
+  @UseGuards(AuthGuard)
+  getStats(@Param('postId') postId: string, @Request() req) {
+    return this.reactionService.getPostStats(postId, req.user.uid);
   }
 
   @Put(':type')

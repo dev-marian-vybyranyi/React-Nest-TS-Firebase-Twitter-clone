@@ -2,6 +2,7 @@ import { useReactionStore } from "@/store/useReactionStore";
 import { useEffect } from "react";
 import { Button } from "../ui/button";
 import { ThumbsUp, ThumbsDown } from "lucide-react";
+import { useAuthStore } from "@/store/useAuthStore";
 
 interface ReactionBarProps {
   postId: string;
@@ -9,11 +10,13 @@ interface ReactionBarProps {
 
 const ReactionBar = ({ postId }: ReactionBarProps) => {
   const { reactions, react, fetchStats } = useReactionStore();
+  const { user } = useAuthStore();
+
   const reaction = reactions[postId];
 
   useEffect(() => {
     fetchStats(postId);
-  }, [postId]);
+  }, [postId, user?.uid]);
 
   const isLiked = reaction?.userReaction === "like";
   const isDisliked = reaction?.userReaction === "dislike";

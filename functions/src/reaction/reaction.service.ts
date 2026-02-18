@@ -27,7 +27,12 @@ export class ReactionService {
 
   async getPostStats(
     postId: string,
-  ): Promise<{ likes: number; dislikes: number }> {
+    userId: string,
+  ): Promise<{
+    likes: number;
+    dislikes: number;
+    userReaction: ReactionType | null;
+  }> {
     const likes = await this.reactionRepository.countByPostAndType(
       postId,
       'like',
@@ -36,6 +41,10 @@ export class ReactionService {
       postId,
       'dislike',
     );
-    return { likes, dislikes };
+
+    const reaction = await this.reactionRepository.findOne(userId, postId);
+    const userReaction = reaction?.type ?? null;
+
+    return { likes, dislikes, userReaction };
   }
 }
