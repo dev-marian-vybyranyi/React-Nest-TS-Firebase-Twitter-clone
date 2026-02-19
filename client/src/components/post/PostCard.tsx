@@ -7,6 +7,8 @@ import { Link } from "react-router-dom";
 import PostDropdown from "./PostDropdown";
 import { useAuthStore } from "@/store/useAuthStore";
 import ReactionBar from "./ReactionBar";
+import { useState } from "react";
+import CommentForm from "../comments/commentForm";
 
 interface PostCardProps {
   post?: Post;
@@ -14,6 +16,7 @@ interface PostCardProps {
 
 const PostCard = ({ post }: PostCardProps) => {
   const { user } = useAuthStore();
+  const [showComments, setShowComments] = useState(false);
   const isOwnPost = user?.uid === post?.userId;
 
   if (!post) {
@@ -71,7 +74,10 @@ const PostCard = ({ post }: PostCardProps) => {
         initialLikes={post.likes}
         initialDislikes={post.dislikes}
         initialUserReaction={post.userReaction}
+        onCommentClick={() => setShowComments(!showComments)}
       />
+
+      {showComments && <CommentForm postId={post.id} />}
     </Card>
   );
 };

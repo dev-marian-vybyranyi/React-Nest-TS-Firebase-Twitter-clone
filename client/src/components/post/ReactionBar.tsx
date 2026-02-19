@@ -11,6 +11,7 @@ interface ReactionBarProps {
   initialDislikes?: number;
   initialCommentsCount?: number;
   initialUserReaction?: ReactionType | null;
+  onCommentClick?: () => void;
 }
 
 const ReactionBar = ({
@@ -19,6 +20,7 @@ const ReactionBar = ({
   initialDislikes = 0,
   initialCommentsCount = 0,
   initialUserReaction = null,
+  onCommentClick,
 }: ReactionBarProps) => {
   const { reactions, react, setReaction } = useReactionStore();
 
@@ -71,11 +73,10 @@ const ReactionBar = ({
       <Button
         variant="ghost"
         size="sm"
-        className={`gap-2 ${isDisliked ? "text-red-500" : "text-slate-500"}`}
+        className="gap-2 text-slate-500"
+        onClick={onCommentClick}
       >
-        <MessageCircleMore
-          className={`h-4 w-4 ${isDisliked ? "fill-current" : ""}`}
-        />
+        <MessageCircleMore className="h-4 w-4" />
         <span>{reaction?.commentsCount ?? initialCommentsCount}</span>
       </Button>
     </div>

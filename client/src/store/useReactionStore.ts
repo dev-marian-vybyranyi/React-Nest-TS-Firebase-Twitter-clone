@@ -8,6 +8,8 @@ interface ReactionState {
   remove: (postId: string) => Promise<void>;
   fetchStats: (postId: string) => Promise<void>;
   setReaction: (postId: string, reaction: PostReaction) => void;
+  incrementComments: (postId: string) => void;
+  decrementComments: (postId: string) => void;
 }
 
 export const useReactionStore = create<ReactionState>((set, get) => ({
@@ -89,6 +91,36 @@ export const useReactionStore = create<ReactionState>((set, get) => ({
   setReaction: (postId: string, reaction: PostReaction) => {
     set((state) => ({
       reactions: { ...state.reactions, [postId]: reaction },
+    }));
+  },
+
+  incrementComments: (postId: string) => {
+    const current = get().reactions[postId];
+    if (!current) return;
+
+    set((state) => ({
+      reactions: {
+        ...state.reactions,
+        [postId]: {
+          ...current,
+          commentsCount: (current.commentsCount || 0) + 1,
+        },
+      },
+    }));
+  },
+
+  decrementComments: (postId: string) => {
+    const current = get().reactions[postId];
+    if (!current) return;
+
+    set((state) => ({
+      reactions: {
+        ...state.reactions,
+        [postId]: {
+          ...current,
+          commentsCount: Math.max((current.commentsCount || 0) - 1, 0),
+        },
+      },
     }));
   },
 }));
