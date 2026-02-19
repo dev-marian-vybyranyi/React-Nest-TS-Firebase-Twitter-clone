@@ -14,7 +14,7 @@ export const onCommentCreated = functions.firestore
     if (comment.parentId || !postId) return null;
 
     const postRef = db.collection('posts').doc(postId);
-    return postRef.update({ commentCount: FieldValue.increment(1) });
+    return postRef.update({ commentsCount: FieldValue.increment(1) });
   });
 
 export const onCommentDeleted = functions.firestore
@@ -26,5 +26,5 @@ export const onCommentDeleted = functions.firestore
     if (comment.parentId || !postId) return null;
 
     const postRef = db.collection('posts').doc(postId);
-    return postRef.update({ commentCount: FieldValue.increment(-1) });
+    return postRef.update({ commentsCount: FieldValue.increment(-1) });
   });

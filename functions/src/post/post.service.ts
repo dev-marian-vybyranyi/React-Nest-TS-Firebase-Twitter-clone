@@ -45,6 +45,7 @@ export class PostService {
         updatedAt: now,
         likesCount: 0,
         dislikesCount: 0,
+        commentsCount: 0,
       };
 
       const newPostData = await this.postRepository.create(postData);

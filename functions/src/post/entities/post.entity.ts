@@ -13,4 +13,5 @@ export class Post {
   };
   likesCount: number;
   dislikesCount: number;
+  commentsCount: number;
 }

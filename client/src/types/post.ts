@@ -13,6 +13,7 @@ export interface Post {
   };
   likes?: number;
   dislikes?: number;
+  commentsCount?: number;
   userReaction?: "like" | "dislike" | null;
 }
 
