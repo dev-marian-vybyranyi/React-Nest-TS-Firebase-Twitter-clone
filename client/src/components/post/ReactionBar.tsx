@@ -1,5 +1,5 @@
 import { useReactionStore } from "@/store/useReactionStore";
-import { ThumbsDown, ThumbsUp } from "lucide-react";
+import { ThumbsDown, ThumbsUp, MessageCircleMore } from "lucide-react";
 import { useEffect } from "react";
 import { Button } from "../ui/button";
 
@@ -9,6 +9,7 @@ interface ReactionBarProps {
   postId: string;
   initialLikes?: number;
   initialDislikes?: number;
+  initialCommentsCount?: number;
   initialUserReaction?: ReactionType | null;
 }
 
@@ -16,6 +17,7 @@ const ReactionBar = ({
   postId,
   initialLikes = 0,
   initialDislikes = 0,
+  initialCommentsCount = 0,
   initialUserReaction = null,
 }: ReactionBarProps) => {
   const { reactions, react, setReaction } = useReactionStore();
@@ -27,6 +29,7 @@ const ReactionBar = ({
       setReaction(postId, {
         likes: initialLikes,
         dislikes: initialDislikes,
+        commentsCount: initialCommentsCount,
         userReaction: initialUserReaction,
       });
     }
@@ -35,6 +38,7 @@ const ReactionBar = ({
     reaction,
     initialLikes,
     initialDislikes,
+    initialCommentsCount,
     initialUserReaction,
     setReaction,
   ]);
@@ -62,6 +66,17 @@ const ReactionBar = ({
       >
         <ThumbsDown className={`h-4 w-4 ${isDisliked ? "fill-current" : ""}`} />
         <span>{reaction?.dislikes ?? initialDislikes}</span>
+      </Button>
+
+      <Button
+        variant="ghost"
+        size="sm"
+        className={`gap-2 ${isDisliked ? "text-red-500" : "text-slate-500"}`}
+      >
+        <MessageCircleMore
+          className={`h-4 w-4 ${isDisliked ? "fill-current" : ""}`}
+        />
+        <span>{reaction?.commentsCount ?? initialCommentsCount}</span>
       </Button>
     </div>
   );

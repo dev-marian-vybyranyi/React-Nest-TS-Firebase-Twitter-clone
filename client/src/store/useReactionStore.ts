@@ -28,6 +28,7 @@ export const useReactionStore = create<ReactionState>((set, get) => ({
         userReaction: null,
         likes: type === "like" ? likes - 1 : likes,
         dislikes: type === "dislike" ? dislikes - 1 : dislikes,
+        commentsCount: current?.commentsCount,
       };
     } else {
       newReaction = {
@@ -40,6 +41,7 @@ export const useReactionStore = create<ReactionState>((set, get) => ({
             : prev === "dislike"
               ? dislikes - 1
               : dislikes,
+        commentsCount: current?.commentsCount,
       };
     }
 
