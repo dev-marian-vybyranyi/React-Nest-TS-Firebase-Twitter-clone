@@ -1,5 +1,6 @@
 import * as functions from 'firebase-functions/v1';
 import * as admin from 'firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
 
 const db = admin.firestore();
 
@@ -15,7 +16,7 @@ export const onReactionCreate = functions.firestore
       const postDoc = await transaction.get(postRef);
       if (!postDoc.exists) return;
 
-      const increment = admin.firestore.FieldValue.increment(1);
+      const increment = FieldValue.increment(1);
 
       if (type === 'like') {
         transaction.update(postRef, { likesCount: increment });
@@ -37,7 +38,7 @@ export const onReactionDelete = functions.firestore
       const postDoc = await transaction.get(postRef);
       if (!postDoc.exists) return;
 
-      const decrement = admin.firestore.FieldValue.increment(-1);
+      const decrement = FieldValue.increment(-1);
 
       if (type === 'like') {
         transaction.update(postRef, { likesCount: decrement });
@@ -50,33 +51,37 @@ export const onReactionDelete = functions.firestore
 export const onReactionUpdate = functions.firestore
   .document('reactions/{reactionId}')
   .onUpdate(async (change) => {
-    const newData = change.after.data();
-    const oldData = change.before.data();
+    const afterData = change.after.data();
+    const beforeData = change.before.data();
 
-    if (newData.type === oldData.type) return;
+    if (beforeData.type === afterData.type) return null;
 
-    const { postId } = newData;
+    const { postId } = afterData;
     const postRef = db.collection('posts').doc(postId);
+
+    const oldField =
+      beforeData.type === 'like' ? 'likesCount' : 'dislikesCount';
+    const newField = afterData.type === 'like' ? 'likesCount' : 'dislikesCount';
+
+    const decrease = FieldValue.increment(-1);
+    const increase = FieldValue.increment(1);
 
     await db.runTransaction(async (transaction) => {
       const postDoc = await transaction.get(postRef);
       if (!postDoc.exists) return;
 
-      const increment = admin.firestore.FieldValue.increment(1);
-      const decrement = admin.firestore.FieldValue.increment(-1);
-
       const updates: any = {};
 
-      if (oldData.type === 'like') {
-        updates.likesCount = decrement;
-      } else if (oldData.type === 'dislike') {
-        updates.dislikesCount = decrement;
+      if (beforeData.type === 'like') {
+        updates.likesCount = decrease;
+      } else if (beforeData.type === 'dislike') {
+        updates.dislikesCount = decrease;
       }
 
-      if (newData.type === 'like') {
-        updates.likesCount = increment;
-      } else if (newData.type === 'dislike') {
-        updates.dislikesCount = increment;
+      if (afterData.type === 'like') {
+        updates.likesCount = increase;
+      } else if (afterData.type === 'dislike') {
+        updates.dislikesCount = increase;
       }
 
       transaction.update(postRef, updates);
