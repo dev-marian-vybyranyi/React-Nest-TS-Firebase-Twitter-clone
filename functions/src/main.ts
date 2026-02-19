@@ -39,3 +39,4 @@ createNestServer(server)
 export const api = functions.https.onRequest(server);
 
 export * from './triggers/reaction-triggers';
+export * from './triggers/comment-triggers';

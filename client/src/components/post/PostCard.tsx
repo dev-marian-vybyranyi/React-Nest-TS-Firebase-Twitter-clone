@@ -73,6 +73,7 @@ const PostCard = ({ post }: PostCardProps) => {
         postId={post.id}
         initialLikes={post.likes}
         initialDislikes={post.dislikes}
+        initialCommentsCount={post.commentsCount}
         initialUserReaction={post.userReaction}
         onCommentClick={() => setShowComments(!showComments)}
       />
