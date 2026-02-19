@@ -1,11 +1,11 @@
-import { create } from "zustand";
 import { api } from "@/api/axios";
 import type { Comment } from "@/types/comment";
+import { create } from "zustand";
 
 interface CommentState {
-  comments: Comment[];
-  loading: boolean;
-  error: string | null;
+  comments: Record<string, Comment[]>;
+  loadingStates: Record<string, boolean>;
+  errors: Record<string, string | null>;
 
   fetchComments: (postId: string) => Promise<void>;
   addComment: (
@@ -16,8 +16,13 @@ interface CommentState {
     content: string,
     parentId?: string,
   ) => Promise<void>;
-  deleteComment: (commentId: string, requesterId: string) => Promise<void>;
+  deleteComment: (
+    postId: string,
+    commentId: string,
+    requesterId: string,
+  ) => Promise<void>;
   updateComment: (
+    postId: string,
     commentId: string,
     requesterId: string,
     content: string,
@@ -25,22 +30,31 @@ interface CommentState {
 }
 
 export const useCommentStore = create<CommentState>((set) => ({
-  comments: [],
-  loading: false,
-  error: null,
+  comments: {},
+  loadingStates: {},
+  errors: {},
 
   fetchComments: async (postId: string) => {
-    set({ loading: true, error: null });
+    set((state) => ({
+      loadingStates: { ...state.loadingStates, [postId]: true },
+      errors: { ...state.errors, [postId]: null },
+    }));
     try {
       const response = await api.get<{ docs: Comment[] }>(
         `/comment/${postId}?limit=10`,
       );
-      set({ comments: response.data.docs, loading: false });
+      set((state) => ({
+        comments: { ...state.comments, [postId]: response.data.docs },
+        loadingStates: { ...state.loadingStates, [postId]: false },
+      }));
     } catch (error: any) {
-      set({
-        loading: false,
-        error: error.message || "Failed to fetch comments",
-      });
+      set((state) => ({
+        loadingStates: { ...state.loadingStates, [postId]: false },
+        errors: {
+          ...state.errors,
+          [postId]: error.message || "Failed to fetch comments",
+        },
+      }));
     }
   },
 
@@ -52,7 +66,10 @@ export const useCommentStore = create<CommentState>((set) => ({
     content,
     parentId,
   ) => {
-    set({ loading: true, error: null });
+    set((state) => ({
+      loadingStates: { ...state.loadingStates, [postId]: true },
+      errors: { ...state.errors, [postId]: null },
+    }));
     try {
       const response = await api.post<Comment>("/comment", {
         postId,
@@ -66,40 +83,60 @@ export const useCommentStore = create<CommentState>((set) => ({
       const newComment = response.data;
 
       set((state) => ({
-        comments: [newComment, ...state.comments],
-        loading: false,
+        comments: {
+          ...state.comments,
+          [postId]: [newComment, ...(state.comments[postId] || [])],
+        },
+        loadingStates: { ...state.loadingStates, [postId]: false },
       }));
     } catch (error: any) {
-      set({
-        loading: false,
-        error: error.message || "Failed to add comment",
-      });
+      set((state) => ({
+        loadingStates: { ...state.loadingStates, [postId]: false },
+        errors: {
+          ...state.errors,
+          [postId]: error.message || "Failed to add comment",
+        },
+      }));
       throw error;
     }
   },
 
-  deleteComment: async (commentId, requesterId) => {
-    set({ loading: true, error: null });
+  deleteComment: async (postId, commentId, requesterId) => {
+    set((state) => ({
+      loadingStates: { ...state.loadingStates, [postId]: true },
+      errors: { ...state.errors, [postId]: null },
+    }));
     try {
       await api.delete(`/comment/${commentId}`, {
         data: { requesterId },
       });
 
       set((state) => ({
-        comments: state.comments.filter((c) => c.id !== commentId),
-        loading: false,
+        comments: {
+          ...state.comments,
+          [postId]: (state.comments[postId] || []).filter(
+            (c) => c.id !== commentId,
+          ),
+        },
+        loadingStates: { ...state.loadingStates, [postId]: false },
       }));
     } catch (error: any) {
-      set({
-        loading: false,
-        error: error.message || "Failed to delete comment",
-      });
+      set((state) => ({
+        loadingStates: { ...state.loadingStates, [postId]: false },
+        errors: {
+          ...state.errors,
+          [postId]: error.message || "Failed to delete comment",
+        },
+      }));
       throw error;
     }
   },
 
-  updateComment: async (commentId, requesterId, content) => {
-    set({ loading: true, error: null });
+  updateComment: async (postId, commentId, requesterId, content) => {
+    set((state) => ({
+      loadingStates: { ...state.loadingStates, [postId]: true },
+      errors: { ...state.errors, [postId]: null },
+    }));
     try {
       await api.patch(`/comment/${commentId}`, {
         requesterId,
@@ -107,16 +144,22 @@ export const useCommentStore = create<CommentState>((set) => ({
       });
 
       set((state) => ({
-        comments: state.comments.map((c) =>
-          c.id === commentId ? { ...c, content } : c,
-        ),
-        loading: false,
+        comments: {
+          ...state.comments,
+          [postId]: (state.comments[postId] || []).map((c) =>
+            c.id === commentId ? { ...c, content } : c,
+          ),
+        },
+        loadingStates: { ...state.loadingStates, [postId]: false },
       }));
     } catch (error: any) {
-      set({
-        loading: false,
-        error: error.message || "Failed to update comment",
-      });
+      set((state) => ({
+        loadingStates: { ...state.loadingStates, [postId]: false },
+        errors: {
+          ...state.errors,
+          [postId]: error.message || "Failed to update comment",
+        },
+      }));
       throw error;
     }
   },

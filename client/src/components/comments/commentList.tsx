@@ -1,14 +1,17 @@
-import { useEffect } from "react";
 import { useCommentStore } from "@/store/useCommentStore";
-import CommentCard from "./commentCard";
 import { Loader2 } from "lucide-react";
+import { useEffect } from "react";
+import CommentCard from "./commentCard";
 
 interface CommentListProps {
   postId: string;
 }
 
 const CommentList = ({ postId }: CommentListProps) => {
-  const { comments, loading, error, fetchComments } = useCommentStore();
+  const { comments, loadingStates, errors, fetchComments } = useCommentStore();
+  const postComments = comments[postId] || [];
+  const loading = loadingStates[postId] || false;
+  const error = errors[postId] || null;
 
   useEffect(() => {
     fetchComments(postId);
@@ -26,7 +29,7 @@ const CommentList = ({ postId }: CommentListProps) => {
     return <div className="text-center text-red-500">Error: {error}</div>;
   }
 
-  if (comments.length === 0) {
+  if (postComments.length === 0) {
     return (
       <div className="text-center text-slate-500">
         No comments yet. Be the first to reply!
@@ -36,7 +39,7 @@ const CommentList = ({ postId }: CommentListProps) => {
 
   return (
     <div className="divide divide-slate-200">
-      {comments.map((comment) => (
+      {postComments.map((comment) => (
         <CommentCard key={comment.id} comment={comment} />
       ))}
     </div>
