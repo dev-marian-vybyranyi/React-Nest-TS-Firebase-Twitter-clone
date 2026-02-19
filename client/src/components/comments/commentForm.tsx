@@ -1,11 +1,11 @@
 import { Button } from "@/components/ui/button";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { CommentSchema } from "@/schemas/comment";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useCommentStore } from "@/store/useCommentStore";
 import { useReactionStore } from "@/store/useReactionStore";
 import { Form, Formik } from "formik";
 import { Forward } from "lucide-react";
-import { User } from "lucide-react";
 
 interface CommentFormProps {
   postId: string;
@@ -39,17 +39,11 @@ const CommentForm = ({ postId }: CommentFormProps) => {
 
   return (
     <div className="flex gap-4 px-4">
-      <div className="w-10 h-10 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center">
-        {user?.photo ? (
-          <img
-            src={user.photo}
-            alt={`${user.name} ${user.surname}`}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <User className="w-5 h-5 text-slate-400" />
-        )}
-      </div>
+      <UserAvatar
+        src={user?.photo}
+        alt={`${user?.name} ${user?.surname}`}
+        className="w-10 h-10"
+      />
 
       <Formik
         initialValues={{ content: "" }}

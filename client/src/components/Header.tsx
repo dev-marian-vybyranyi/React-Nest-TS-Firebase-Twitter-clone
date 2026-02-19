@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { useAuthStore } from "@/store/useAuthStore";
-import { User } from "lucide-react";
 import { Link } from "react-router-dom";
 import CreatePostDialog from "./post/createPostDialog";
 
@@ -21,15 +21,11 @@ const Header = () => {
               <Button variant="ghost" size="sm" className="px-0 gap-4" asChild>
                 <Link to="/profile">
                   <span>{user.name}</span>
-                  {user.photo ? (
-                    <img
-                      src={user.photo}
-                      alt={user.name}
-                      className="h-10 w-10 rounded-full object-cover"
-                    />
-                  ) : (
-                    <User className="h-4 w-4" />
-                  )}
+                  <UserAvatar
+                    src={user.photo}
+                    alt={user.name}
+                    className="h-10 w-10"
+                  />
                 </Link>
               </Button>
             </nav>

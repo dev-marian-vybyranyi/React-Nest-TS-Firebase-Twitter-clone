@@ -1,15 +1,15 @@
 import { Card } from "@/components/ui/card";
 
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { formatDate } from "@/lib/utils";
-import type { Post } from "@/types/post";
-import { User } from "lucide-react";
-import { Link } from "react-router-dom";
-import PostDropdown from "./PostDropdown";
 import { useAuthStore } from "@/store/useAuthStore";
-import ReactionBar from "./ReactionBar";
+import type { Post } from "@/types/post";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import CommentForm from "../comments/commentForm";
 import CommentList from "../comments/commentList";
+import PostDropdown from "./PostDropdown";
+import ReactionBar from "./ReactionBar";
 
 interface PostCardProps {
   post: Post;
@@ -24,17 +24,11 @@ const PostCard = ({ post }: PostCardProps) => {
     <Card className="overflow-hidden shadow-sm bg-white py-4 gap-6">
       <div className="flex items-center gap-3 px-4">
         <Link to={`/profile/${post.userId}`} className="shrink-0">
-          <div className="w-10 h-10 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center">
-            {post.user?.photo ? (
-              <img
-                src={post.user.photo}
-                alt={`${post.user.name} ${post.user.surname}`}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <User className="w-5 h-5 text-slate-400" />
-            )}
-          </div>
+          <UserAvatar
+            src={post.user?.photo}
+            alt={`${post.user?.name} ${post.user?.surname}`}
+            className="w-10 h-10"
+          />
         </Link>
         <div className="flex-1 min-w-0">
           <Link
