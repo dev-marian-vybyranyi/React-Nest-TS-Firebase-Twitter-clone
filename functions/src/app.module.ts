@@ -7,6 +7,7 @@ import { PostModule } from './post/post.module';
 import { StorageModule } from './storage/storage.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ReactionModule } from './reaction/reaction.module';
+import { CommentModule } from './comment/comment.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { ReactionModule } from './reaction/reaction.module';
     StorageModule,
     EventEmitterModule.forRoot(),
     ReactionModule,
+    CommentModule,
   ],
   controllers: [AppController],
   providers: [AppService],
