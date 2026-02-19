@@ -267,4 +267,15 @@ export class PostService {
       await this.postRepository.updateUserInPosts(userId, userData);
     } catch (error) {}
   }
+
+  async deleteAllPostsByUserId(userId: string): Promise<void> {
+    const posts = await this.postRepository.findAllByUserId(userId);
+    await Promise.all(
+      posts.map((post) =>
+        this.remove(post.id, userId).catch((err) => {
+          console.error(`Failed to delete post ${post.id}:`, err);
+        }),
+      ),
+    );
+  }
 }

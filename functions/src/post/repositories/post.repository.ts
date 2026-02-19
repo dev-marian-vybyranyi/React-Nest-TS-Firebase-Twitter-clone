@@ -71,6 +71,11 @@ export class PostRepository {
     };
   }
 
+  async findAllByUserId(userId: string): Promise<Post[]> {
+    const snapshot = await this.collection.where('userId', '==', userId).get();
+    return snapshot.docs.map((doc) => this.mapDoc(doc) as Post);
+  }
+
   async update(id: string, updateData: Partial<Post>): Promise<void> {
     await this.collection.doc(id).update(updateData);
   }

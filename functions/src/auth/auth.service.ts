@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import * as admin from 'firebase-admin';
 import { ReactionRepository } from 'src/reaction/repositories/reaction.repository';
+import { UserRepository } from 'src/user/repositories/user.repository';
 import { PostService } from '../post/post.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
@@ -12,6 +13,7 @@ export class AuthService {
   constructor(
     private readonly postService: PostService,
     private readonly reactionRepository: ReactionRepository,
+    private readonly userRepository: UserRepository,
   ) {}
   async signup(createAuthDto: CreateAuthDto) {
     const { email, password, name, surname, photo } = createAuthDto;
@@ -24,17 +26,14 @@ export class AuthService {
         photoURL: photo && photo.trim() !== '' ? photo : undefined,
       });
 
-      await admin
-        .firestore()
-        .collection('users')
-        .doc(userRecord.uid)
-        .set({
-          email: userRecord.email,
-          name,
-          surname,
-          photo: photo || null,
-          createdAt: new Date().toISOString(),
-        });
+      await this.userRepository.create({
+        id: userRecord.uid,
+        email: userRecord.email,
+        name,
+        surname,
+        photo: photo || null,
+        createdAt: new Date(),
+      } as any);
 
       return {
         uid: userRecord.uid,
@@ -62,25 +61,23 @@ export class AuthService {
           ? googleName.split(' ')[1]
           : '';
 
-      const userRef = admin.firestore().collection('users').doc(uid);
-      const userSnap = await userRef.get();
+      const user = await this.userRepository.findOne(uid);
 
-      if (!userSnap.exists) {
-        await userRef.set({
+      if (!user) {
+        await this.userRepository.create({
+          id: uid,
           email,
           name,
           surname,
           photo: photo || null,
-          createdAt: new Date().toISOString(),
-        });
+          createdAt: new Date(),
+        } as any);
         console.log(`Created new user profile for ${email}`);
       } else {
         console.log(`User ${email} already exists. Logging in...`);
       }
 
-      const userData = userSnap.exists
-        ? userSnap.data()
-        : { name, surname, photo };
+      const userData = user || { name, surname, photo };
 
       return {
         message: 'Google auth successful',
@@ -102,12 +99,11 @@ export class AuthService {
       const decodedToken = await admin.auth().verifyIdToken(signInDto.token);
       const { email, uid, name: googleName, picture: photo } = decodedToken;
 
-      const userRef = admin.firestore().collection('users').doc(uid);
-      const userSnap = await userRef.get();
+      const user = await this.userRepository.findOne(uid);
 
       let userData;
 
-      if (!userSnap.exists) {
+      if (!user) {
         const name = googleName ? googleName.split(' ')[0] : '';
         const surname =
           googleName && googleName.split(' ').length > 1
@@ -115,16 +111,17 @@ export class AuthService {
             : '';
 
         userData = {
+          id: uid,
           email,
           name,
           surname,
           photo: photo || null,
-          createdAt: new Date().toISOString(),
+          createdAt: new Date(),
         };
 
-        await userRef.set(userData);
+        await this.userRepository.create(userData as any);
       } else {
-        userData = userSnap.data();
+        userData = user;
       }
 
       return {
@@ -144,12 +141,7 @@ export class AuthService {
 
   async deleteUser(uid: string) {
     try {
-      const userDoc = await admin
-        .firestore()
-        .collection('users')
-        .doc(uid)
-        .get();
-      const userData = userDoc.data();
+      const userData = await this.userRepository.findOne(uid);
 
       if (userData?.photo) {
         try {
@@ -164,21 +156,9 @@ export class AuthService {
         }
       }
 
-      const postsSnapshot = await admin
-        .firestore()
-        .collection('posts')
-        .where('userId', '==', uid)
-        .get();
+      await this.postService.deleteAllPostsByUserId(uid);
 
-      await Promise.all(
-        postsSnapshot.docs.map((doc) =>
-          this.postService.remove(doc.id, uid).catch((err) => {
-            console.error(`Failed to delete post ${doc.id}:`, err);
-          }),
-        ),
-      );
-
-      await admin.firestore().collection('users').doc(uid).delete();
+      await this.userRepository.delete(uid);
       await this.reactionRepository.deleteByUserId(uid);
       await admin.auth().deleteUser(uid);
 
