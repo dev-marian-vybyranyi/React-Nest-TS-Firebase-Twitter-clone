@@ -38,7 +38,7 @@ export class CommentRepository {
     let query = this.collection
       .where('postId', '==', postId)
       .where('parentId', '==', null)
-      .orderBy('createdAt', 'asc')
+      .orderBy('createdAt', 'desc')
       .limit(limit);
 
     if (lastDocId) {

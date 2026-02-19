@@ -3,10 +3,10 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   Query,
+  Patch,
 } from '@nestjs/common';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
@@ -22,7 +22,7 @@ export class CommentController {
     @Query('limit') limit: number = 10,
     @Query('cursor') cursor?: string,
   ) {
-    return this.commentService.findAll(postId, limit, cursor);
+    return this.commentService.findAll(postId, +limit, cursor);
   }
 
   @Get(':id/replies')
@@ -31,7 +31,7 @@ export class CommentController {
     @Query('limit') limit: number = 5,
     @Query('cursor') cursor?: string,
   ) {
-    return this.commentService.findReplies(id, limit, cursor);
+    return this.commentService.findReplies(id, +limit, cursor);
   }
 
   @Post()

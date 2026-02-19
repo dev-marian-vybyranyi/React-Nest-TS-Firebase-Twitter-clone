@@ -9,19 +9,16 @@ import { useAuthStore } from "@/store/useAuthStore";
 import ReactionBar from "./ReactionBar";
 import { useState } from "react";
 import CommentForm from "../comments/commentForm";
+import CommentList from "../comments/commentList";
 
 interface PostCardProps {
-  post?: Post;
+  post: Post;
 }
 
 const PostCard = ({ post }: PostCardProps) => {
   const { user } = useAuthStore();
   const [showComments, setShowComments] = useState(false);
   const isOwnPost = user?.uid === post?.userId;
-
-  if (!post) {
-    return null;
-  }
 
   return (
     <Card className="overflow-hidden shadow-sm bg-white py-4 gap-6">
@@ -78,7 +75,12 @@ const PostCard = ({ post }: PostCardProps) => {
         onCommentClick={() => setShowComments(!showComments)}
       />
 
-      {showComments && <CommentForm postId={post.id} />}
+      {showComments && (
+        <>
+          <CommentForm postId={post.id} />
+          <CommentList postId={post.id} />
+        </>
+      )}
     </Card>
   );
 };
