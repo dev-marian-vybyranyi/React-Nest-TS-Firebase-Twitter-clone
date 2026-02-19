@@ -5,8 +5,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { ReactionService } from '../reaction/reaction.service';
 import { ReactionRepository } from '../reaction/repositories/reaction.repository';
+import { ReactionType } from '../reaction/entities/reaction.entity';
 import { UserRepository } from '../user/repositories/user.repository';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
@@ -21,7 +21,6 @@ export class PostService {
     private readonly postRepository: PostRepository,
     private readonly userRepository: UserRepository,
     private readonly reactionRepository: ReactionRepository,
-    private readonly reactionService: ReactionService,
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
@@ -61,25 +60,31 @@ export class PostService {
     limit: number,
     lastDocId?: string,
     currentUserId?: string,
-  ): Promise<{ posts: Post[]; lastDocId: string | null; hasMore: boolean }> {
+  ): Promise<{ posts: any[]; lastDocId: string | null; hasMore: boolean }> {
     try {
       const { docs } = await this.postRepository.findAll(limit, lastDocId);
 
       const hasMore = docs.length > limit;
       const posts = docs.slice(0, limit);
+      const postIds = posts.map((post) => post.id);
 
-      const postsWithStats = await Promise.all(
-        posts.map(async (post) => {
-          if (!currentUserId) {
-            return { ...post, likes: 0, dislikes: 0, userReaction: null };
-          }
-          const stats = await this.reactionService.getPostStats(
-            post.id,
-            currentUserId,
-          );
-          return { ...post, ...stats };
-        }),
-      );
+      let userReactions: any[] = [];
+      if (currentUserId && postIds.length > 0) {
+        userReactions = await this.reactionRepository.findByUserAndPostIds(
+          currentUserId,
+          postIds,
+        );
+      }
+
+      const postsWithStats = posts.map((post) => {
+        const reaction = userReactions.find((r) => r.postId === post.id);
+        return {
+          ...post,
+          likes: post.likesCount || 0,
+          dislikes: post.dislikesCount || 0,
+          userReaction: reaction ? reaction.type : null,
+        };
+      });
 
       const lastDocIdResult =
         posts.length > 0 ? posts[posts.length - 1].id : null;
@@ -90,7 +95,7 @@ export class PostService {
     }
   }
 
-  async findOne(id: string, currentUserId?: string): Promise<Post> {
+  async findOne(id: string, currentUserId?: string): Promise<any> {
     try {
       const post = await this.postRepository.findOne(id);
 
@@ -98,15 +103,21 @@ export class PostService {
         throw new NotFoundException('Post not found');
       }
 
+      let userReaction: ReactionType | null = null;
       if (currentUserId) {
-        const stats = await this.reactionService.getPostStats(
-          post.id,
+        const reaction = await this.reactionRepository.findOne(
           currentUserId,
+          post.id,
         );
-        return { ...post, ...stats };
+        userReaction = reaction ? reaction.type : null;
       }
 
-      return post;
+      return {
+        ...post,
+        likes: post.likesCount || 0,
+        dislikes: post.dislikesCount || 0,
+        userReaction,
+      };
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
@@ -120,7 +131,7 @@ export class PostService {
     limit: number,
     lastDocId?: string,
     currentUserId?: string,
-  ): Promise<{ posts: Post[]; lastDocId: string | null; hasMore: boolean }> {
+  ): Promise<{ posts: any[]; lastDocId: string | null; hasMore: boolean }> {
     try {
       const { docs } = await this.postRepository.findByUserId(
         userId,
@@ -130,19 +141,25 @@ export class PostService {
 
       const hasMore = docs.length > limit;
       const posts = docs.slice(0, limit);
+      const postIds = posts.map((post) => post.id);
 
-      const postsWithStats = await Promise.all(
-        posts.map(async (post) => {
-          if (!currentUserId) {
-            return { ...post, likes: 0, dislikes: 0, userReaction: null };
-          }
-          const stats = await this.reactionService.getPostStats(
-            post.id,
-            currentUserId,
-          );
-          return { ...post, ...stats };
-        }),
-      );
+      let userReactions: any[] = [];
+      if (currentUserId && postIds.length > 0) {
+        userReactions = await this.reactionRepository.findByUserAndPostIds(
+          currentUserId,
+          postIds,
+        );
+      }
+
+      const postsWithStats = posts.map((post) => {
+        const reaction = userReactions.find((r) => r.postId === post.id);
+        return {
+          ...post,
+          likes: post.likesCount || 0,
+          dislikes: post.dislikesCount || 0,
+          userReaction: reaction ? reaction.type : null,
+        };
+      });
 
       const lastDocIdResult =
         posts.length > 0 ? posts[posts.length - 1].id : null;

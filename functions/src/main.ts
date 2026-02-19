@@ -37,3 +37,5 @@ createNestServer(server)
   .catch((err) => console.error('Nest broken', err));
 
 export const api = functions.https.onRequest(server);
+
+export * from './triggers/reaction-triggers';

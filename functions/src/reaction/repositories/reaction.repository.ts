@@ -86,4 +86,18 @@ export class ReactionRepository {
     const snapshot = await query.get();
     return snapshot.size;
   }
+
+  async findByUserAndPostIds(
+    userId: string,
+    postIds: string[],
+  ): Promise<ReactionEntity[]> {
+    if (postIds.length === 0) return [];
+
+    const query = this.collection
+      .where('userId', '==', userId)
+      .where('postId', 'in', postIds);
+
+    const snapshot = await query.get();
+    return snapshot.docs.map((doc) => doc.data() as ReactionEntity);
+  }
 }

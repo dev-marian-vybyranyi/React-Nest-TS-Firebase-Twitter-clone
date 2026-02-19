@@ -11,4 +11,6 @@ export class Post {
     surname: string;
     photo?: string;
   };
+  likesCount?: number;
+  dislikesCount?: number;
 }
