@@ -89,7 +89,12 @@ export class PostRepository {
     user: { name?: string; surname?: string; photo?: string },
   ): Promise<void> {
     const snapshot = await this.collection.where('userId', '==', userId).get();
-    const batch = admin.firestore().batch();
+    if (snapshot.empty) return;
+
+    const db = admin.firestore();
+    let batch = db.batch();
+    let count = 0;
+    const batches: Promise<any>[] = [];
 
     snapshot.docs.forEach((doc) => {
       const updates: Record<string, any> = {};
@@ -99,9 +104,20 @@ export class PostRepository {
 
       if (Object.keys(updates).length > 0) {
         batch.update(doc.ref, updates);
+        count++;
+
+        if (count === 500) {
+          batches.push(batch.commit());
+          batch = db.batch();
+          count = 0;
+        }
       }
     });
 
-    await batch.commit();
+    if (count > 0) {
+      batches.push(batch.commit());
+    }
+
+    await Promise.all(batches);
   }
 }

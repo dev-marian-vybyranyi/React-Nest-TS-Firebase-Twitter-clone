@@ -1,3 +1,4 @@
+import * as admin from 'firebase-admin';
 import {
   ForbiddenException,
   Injectable,
@@ -292,12 +293,36 @@ export class PostService {
 
   async deleteAllPostsByUserId(userId: string): Promise<void> {
     const posts = await this.postRepository.findAllByUserId(userId);
-    await Promise.all(
-      posts.map((post) =>
-        this.remove(post.id, userId).catch((err) => {
-          console.error(`Failed to delete post ${post.id}:`, err);
-        }),
-      ),
-    );
+    if (!posts.length) return;
+
+    const db = admin.firestore();
+    let batch = db.batch();
+    let count = 0;
+    const batches: Promise<any>[] = [];
+
+    for (const post of posts) {
+      const postRef = db.collection('posts').doc(post.id);
+      batch.delete(postRef);
+      count++;
+
+      if (count === 500) {
+        batches.push(batch.commit());
+        batch = db.batch();
+        count = 0;
+      }
+
+      if (post.photo) {
+        this.eventEmitter.emit(
+          'post.deleted',
+          new PostDeletedEvent(post.photo),
+        );
+      }
+    }
+
+    if (count > 0) {
+      batches.push(batch.commit());
+    }
+
+    await Promise.all(batches);
   }
 }

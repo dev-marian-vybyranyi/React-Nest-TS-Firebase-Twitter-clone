@@ -24,7 +24,7 @@ export const createNestServer = async (expressInstance: express.Express) => {
   );
 
   app.enableCors({
-    origin: 'http://localhost:5173',
+    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
