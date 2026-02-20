@@ -2,6 +2,7 @@ import PostList from "@/components/post/PostList";
 import { usePostStore } from "@/store/usePostStore";
 import { useEffect } from "react";
 import LoadingState from "@/components/LoadingState";
+import SortDropdown from "@/components/post/SortDropdown";
 
 const Home = () => {
   const { posts, loading, hasMore, fetchPosts } = usePostStore();
@@ -16,6 +17,7 @@ const Home = () => {
 
   return (
     <div className="max-w-2xl mx-auto">
+      <SortDropdown />
       <PostList
         posts={posts}
         onLoadMore={() => fetchPosts(5, true)}

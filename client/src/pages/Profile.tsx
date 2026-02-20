@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import LoadingState from "@/components/LoadingState";
 import { useProfileActions } from "@/hooks/useProfileActions.tsx";
 import { useUserStore } from "@/store/useUserStore";
+import SortDropdown from "@/components/post/SortDropdown";
 
 const Profile = () => {
   const { userId } = useParams<{ userId?: string }>();
@@ -66,20 +67,23 @@ const Profile = () => {
             isLoading={authLoading}
           />
         </div>
-        {postLoading && posts.length === 0 ? (
-          <LoadingState />
-        ) : (
-          <PostList
-            posts={posts}
-            onLoadMore={() => {
-              if (targetUserId) {
-                fetchPosts(5, true, targetUserId);
-              }
-            }}
-            hasMore={hasMore}
-            isLoadingMore={postLoading && posts.length > 0}
-          />
-        )}
+        <div>
+          <SortDropdown />
+          {postLoading && posts.length === 0 ? (
+            <LoadingState />
+          ) : (
+            <PostList
+              posts={posts}
+              onLoadMore={() => {
+                if (targetUserId) {
+                  fetchPosts(5, true, targetUserId);
+                }
+              }}
+              hasMore={hasMore}
+              isLoadingMore={postLoading && posts.length > 0}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

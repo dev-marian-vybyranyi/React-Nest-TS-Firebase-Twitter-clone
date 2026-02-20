@@ -8,6 +8,8 @@ interface PostState {
   hasMore: boolean;
   loading: boolean;
   error: string | null;
+  sortBy: "latest" | "most_liked" | "most_commented";
+  setSortBy: (sortBy: "latest" | "most_liked" | "most_commented") => void;
   fetchPosts: (
     limit?: number,
     append?: boolean,
@@ -26,9 +28,15 @@ export const usePostStore = create<PostState>((set) => ({
   hasMore: true,
   loading: false,
   error: null,
+  sortBy: "latest",
+
+  setSortBy: (sortBy) => {
+    set({ sortBy, posts: [], lastDocId: null, hasMore: true });
+    usePostStore.getState().fetchPosts();
+  },
 
   fetchPosts: async (limit = 10, append = false, userId?: string) => {
-    const { lastDocId, loading, hasMore } = usePostStore.getState();
+    const { lastDocId, loading, hasMore, sortBy } = usePostStore.getState();
 
     if (append && (loading || !hasMore || !lastDocId)) return;
 
@@ -36,7 +44,7 @@ export const usePostStore = create<PostState>((set) => ({
 
     try {
       const baseUrl = userId ? `/posts/user/${userId}` : "/posts";
-      let url = `${baseUrl}?limit=${limit}`;
+      let url = `${baseUrl}?limit=${limit}&sortBy=${sortBy}`;
 
       if (append && lastDocId) {
         url += `&lastDocId=${lastDocId}`;
