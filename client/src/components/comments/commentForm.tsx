@@ -4,16 +4,25 @@ import { CommentSchema } from "@/schemas/comment";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useCommentStore } from "@/store/useCommentStore";
 import { useReactionStore } from "@/store/useReactionStore";
+import type { Comment } from "@/types/comment";
 import { Form, Formik } from "formik";
 import { Forward } from "lucide-react";
 
 interface CommentFormProps {
   postId: string;
+  comment?: Comment;
+  onSuccess?: () => void;
+  onCancel?: () => void;
 }
 
-const CommentForm = ({ postId }: CommentFormProps) => {
+const CommentForm = ({
+  postId,
+  comment,
+  onSuccess,
+  onCancel,
+}: CommentFormProps) => {
   const { user } = useAuthStore();
-  const { addComment } = useCommentStore();
+  const { addComment, updateComment } = useCommentStore();
   const { incrementComments } = useReactionStore();
 
   const handleCommentSubmit = async (
@@ -23,17 +32,23 @@ const CommentForm = ({ postId }: CommentFormProps) => {
     if (!user) return;
 
     try {
-      await addComment(
-        postId,
-        user.uid,
-        `${user.name} ${user.surname}`,
-        user.photo || null,
-        values.content,
-      );
-      incrementComments(postId);
-      resetForm();
+      if (comment) {
+        await updateComment(postId, comment.id, user.uid, values.content);
+        if (onSuccess) onSuccess();
+      } else {
+        await addComment(
+          postId,
+          user.uid,
+          `${user.name} ${user.surname}`,
+          user.photo || null,
+          values.content,
+        );
+        incrementComments(postId);
+        resetForm();
+        if (onSuccess) onSuccess();
+      }
     } catch (error) {
-      console.error("Failed to add comment:", error);
+      console.error("Failed to save comment:", error);
     }
   };
 
@@ -46,7 +61,7 @@ const CommentForm = ({ postId }: CommentFormProps) => {
       />
 
       <Formik
-        initialValues={{ content: "" }}
+        initialValues={{ content: comment ? comment.content : "" }}
         validationSchema={CommentSchema}
         onSubmit={handleCommentSubmit}
       >
@@ -67,15 +82,33 @@ const CommentForm = ({ postId }: CommentFormProps) => {
               onChange={handleChange}
               onBlur={handleBlur}
             />
-            <div className="flex justify-end items-center">
+            <div className="flex justify-end items-center gap-2">
+              {onCancel && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onCancel}
+                  disabled={isSubmitting}
+                  className="px-4 py-2 text-gray-600"
+                  size="sm"
+                >
+                  Cancel
+                </Button>
+              )}
               <Button
                 type="submit"
-                disabled={!isValid || !dirty || isSubmitting}
-                className="rounded-full px-4 font-bold"
+                disabled={!isValid || (!comment && !dirty) || isSubmitting}
+                className="bg-blue-500 text-white rounded-md py-2 px-4 disabled:bg-blue-300 disabled:cursor-not-allowed"
                 size="sm"
               >
-                {isSubmitting ? "Posting..." : "Reply"}
-                {!isSubmitting && <Forward className="h-6 w-6" />}
+                {isSubmitting
+                  ? comment
+                    ? "Saving..."
+                    : "Posting..."
+                  : comment
+                    ? "Save"
+                    : "Reply"}
+                {!isSubmitting && !comment && <Forward className="h-6 w-6" />}
               </Button>
             </div>
           </Form>

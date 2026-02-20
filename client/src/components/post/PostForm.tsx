@@ -8,6 +8,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { usePostStore } from "@/store/usePostStore";
 import { toast } from "react-hot-toast";
 import type { Post } from "@/types/post";
+import { Button } from "../ui/button";
 
 interface PostFormProps {
   post?: Post;
@@ -112,15 +113,15 @@ const PostForm = ({ post, onSuccess, onCancel }: PostFormProps) => {
           />
           <div className="flex gap-2">
             {onCancel && (
-              <button
+              <Button
                 type="button"
                 onClick={onCancel}
                 className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
               >
                 Cancel
-              </button>
+              </Button>
             )}
-            <button
+            <Button
               type="submit"
               disabled={isUploading || isPostLoading || isSubmitting}
               className="flex-1 bg-blue-500 text-white rounded-md py-2 px-4 hover:bg-blue-600 transition-colors disabled:bg-blue-300 disabled:cursor-not-allowed"
@@ -134,7 +135,7 @@ const PostForm = ({ post, onSuccess, onCancel }: PostFormProps) => {
                   : isEditMode
                     ? "Update Post"
                     : "Create Post"}
-            </button>
+            </Button>
           </div>
         </Form>
       )}

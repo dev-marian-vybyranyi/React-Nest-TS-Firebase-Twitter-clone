@@ -19,7 +19,7 @@ interface PostDropdownProps {
 
 const PostDropdown = ({ post }: PostDropdownProps) => {
   const [showEditDialog, setShowEditDialog] = useState(false);
-  const deletePost = usePostStore((state) => state.deletePost);
+  const { deletePost } = usePostStore();
 
   const handleDelete = async () => {
     try {
