@@ -98,4 +98,12 @@ export class CommentService {
       await this.commentRepository.updateUserInComments(userId, userData);
     } catch (error) {}
   }
+
+  async deleteByUserId(userId: string): Promise<void> {
+    try {
+      await this.commentRepository.deleteByUserId(userId);
+    } catch (error) {
+      console.error('Error deleting comments by user:', error);
+    }
+  }
 }

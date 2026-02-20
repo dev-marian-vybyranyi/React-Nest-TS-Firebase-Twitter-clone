@@ -177,4 +177,41 @@ export class CommentRepository {
     snapshot.docs.forEach((doc) => batch.delete(doc.ref));
     await batch.commit();
   }
+
+  async deleteByUserId(userId: string): Promise<void> {
+    const snapshot = await this.collection
+      .where('authorId', '==', userId)
+      .get();
+    if (snapshot.empty) return;
+
+    const db = admin.firestore();
+    let batch = db.batch();
+    let count = 0;
+    const batches: Promise<any>[] = [];
+
+    snapshot.docs.forEach((doc) => {
+      batch.delete(doc.ref);
+      count++;
+
+      const data = doc.data();
+      if (data.parentId) {
+        batch.update(this.collection.doc(data.parentId), {
+          replyCount: FieldValue.increment(-1),
+        });
+        count++;
+      }
+
+      if (count >= 400) {
+        batches.push(batch.commit());
+        batch = db.batch();
+        count = 0;
+      }
+    });
+
+    if (count > 0) {
+      batches.push(batch.commit());
+    }
+
+    await Promise.all(batches);
+  }
 }

@@ -8,6 +8,7 @@ import * as admin from 'firebase-admin';
 import { ReactionRepository } from 'src/reaction/repositories/reaction.repository';
 import { UserRepository } from 'src/user/repositories/user.repository';
 import { PostService } from '../post/post.service';
+import { CommentService } from '../comment/comment.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
 import { SignInDto } from './dto/signIn.dto';
@@ -21,6 +22,7 @@ export class AuthService {
     private readonly postService: PostService,
     private readonly reactionRepository: ReactionRepository,
     private readonly userRepository: UserRepository,
+    private readonly commentService: CommentService,
   ) {}
   async signup(createAuthDto: CreateAuthDto) {
     const { email, password, name, surname, photo } = createAuthDto;
@@ -170,6 +172,7 @@ export class AuthService {
       }
 
       await this.postService.deleteAllPostsByUserId(uid);
+      await this.commentService.deleteByUserId(uid);
 
       await this.userRepository.delete(uid);
       await this.reactionRepository.deleteByUserId(uid);
