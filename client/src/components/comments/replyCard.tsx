@@ -4,6 +4,7 @@ import type { Comment } from "@/types/comment";
 import { useState } from "react";
 import ReplyDropdown from "./replyDropdown";
 import ReplyForm from "./replyForm";
+import { useAuthStore } from "@/store/useAuthStore";
 
 interface ReplyCardProps {
   reply: Comment;
@@ -12,6 +13,9 @@ interface ReplyCardProps {
 
 const ReplyCard = ({ reply, commentId }: ReplyCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
+
+  const { user } = useAuthStore();
+  const isOwnPost = user?.uid === reply?.authorId;
 
   return (
     <div className="flex gap-3 py-3 px-4 border-l-2 border-slate-200 ml-4 mt-2 bg-slate-100 rounded-md">
@@ -44,7 +48,7 @@ const ReplyCard = ({ reply, commentId }: ReplyCardProps) => {
           <p className="text-sm text-slate-700">{reply.content}</p>
         )}
       </div>
-      {isEditing && (
+      {!isEditing && isOwnPost && (
         <ReplyDropdown
           reply={reply}
           commentId={commentId}

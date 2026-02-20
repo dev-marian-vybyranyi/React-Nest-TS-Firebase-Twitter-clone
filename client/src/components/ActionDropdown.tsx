@@ -33,7 +33,7 @@ const ActionDropdown = ({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button className="p-1.5 hover:bg-slate-100 rounded-full transition-colors">
+          <button className="p-1.5 hover:bg-slate-100 rounded-full transition-colors flex items-start h-min">
             <EllipsisVertical className="w-5 h-5 text-slate-400" />
           </button>
         </DropdownMenuTrigger>

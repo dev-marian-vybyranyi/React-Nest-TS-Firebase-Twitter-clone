@@ -75,7 +75,7 @@ const ReplyForm = ({
         }) => (
           <Form className="flex-1 flex flex-col gap-2">
             <textarea
-              className="flex min-h-[60px] w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+              className="flex min-h-[60px] w-full rounded-md border border-slate-300 px-3 py-2 text-sm bg-white"
               name="content"
               placeholder="Write a reply..."
               value={values.content}

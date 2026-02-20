@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { MessageCircle, ChevronDown, ChevronUp } from "lucide-react";
 import ReplyForm from "./replyForm";
 import ReplyList from "./replyList";
+import { useAuthStore } from "@/store/useAuthStore";
 
 interface CommentCardProps {
   comment: Comment;
@@ -17,6 +18,9 @@ const CommentCard = ({ comment }: CommentCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isReplying, setIsReplying] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
+
+  const { user } = useAuthStore();
+  const isOwnPost = user?.uid === comment?.authorId;
 
   return (
     <div className="flex flex-col border-t border-slate-200">
@@ -99,7 +103,7 @@ const CommentCard = ({ comment }: CommentCardProps) => {
             </div>
           )}
         </div>
-        {!isEditing && (
+        {!isEditing && isOwnPost && (
           <CommentDropdown
             comment={comment}
             onEdit={() => setIsEditing(true)}
