@@ -11,6 +11,8 @@ import { useAuthStore } from "./store/useAuthStore";
 import { Toaster } from "react-hot-toast";
 import MainLayout from "./layouts/MainLayout";
 import PostPage from "./pages/PostPage";
+import ProtectedRoute from "./components/ProtectedRoute";
+import PublicRoute from "./components/PublicRoute";
 
 function App() {
   const { isLoading, setUser, setLoading } = useAuthStore();
@@ -47,32 +49,37 @@ function App() {
   return (
     <>
       <Routes>
-        <Route path="/sign-up" element={<SignUp />} />
-        <Route path="/sign-in" element={<SignIn />} />
-        <Route
-          path="/"
-          element={
-            <MainLayout>
-              <Home />
-            </MainLayout>
-          }
-        />
-        <Route
-          path="/profile/:userId?"
-          element={
-            <MainLayout>
-              <Profile />
-            </MainLayout>
-          }
-        />
-        <Route
-          path="/post/:id"
-          element={
-            <MainLayout>
-              <PostPage />
-            </MainLayout>
-          }
-        />
+        <Route element={<PublicRoute />}>
+          <Route path="/sign-up" element={<SignUp />} />
+          <Route path="/sign-in" element={<SignIn />} />
+        </Route>
+
+        <Route element={<ProtectedRoute />}>
+          <Route
+            path="/"
+            element={
+              <MainLayout>
+                <Home />
+              </MainLayout>
+            }
+          />
+          <Route
+            path="/profile/:userId?"
+            element={
+              <MainLayout>
+                <Profile />
+              </MainLayout>
+            }
+          />
+          <Route
+            path="/post/:id"
+            element={
+              <MainLayout>
+                <PostPage />
+              </MainLayout>
+            }
+          />
+        </Route>
       </Routes>
       <Toaster />
     </>
