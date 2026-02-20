@@ -16,7 +16,7 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { Post } from './entities/post.entity';
 import { PostDeletedEvent } from './events/post-deleted.event';
 import { PostUpdatedEvent } from './events/post-updated.event';
-import { PostRepository } from './repositories/post.repository';
+import { PostRepository, sortOptions } from './repositories/post.repository';
 
 @Injectable()
 export class PostService {
@@ -69,9 +69,14 @@ export class PostService {
     limit: number,
     lastDocId?: string,
     currentUserId?: string,
+    sortBy?: sortOptions,
   ): Promise<{ posts: any[]; lastDocId: string | null; hasMore: boolean }> {
     try {
-      const { docs } = await this.postRepository.findAll(limit, lastDocId);
+      const { docs } = await this.postRepository.findAll(
+        limit,
+        lastDocId,
+        sortBy,
+      );
 
       const hasMore = docs.length > limit;
       const posts = docs.slice(0, limit);
@@ -146,12 +151,14 @@ export class PostService {
     limit: number,
     lastDocId?: string,
     currentUserId?: string,
+    sortBy?: sortOptions,
   ): Promise<{ posts: any[]; lastDocId: string | null; hasMore: boolean }> {
     try {
       const { docs } = await this.postRepository.findByUserId(
         userId,
         limit,
         lastDocId,
+        sortBy,
       );
 
       const hasMore = docs.length > limit;

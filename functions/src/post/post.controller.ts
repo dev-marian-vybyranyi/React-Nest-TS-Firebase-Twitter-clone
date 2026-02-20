@@ -14,6 +14,7 @@ import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { AuthGuard } from '../common/guards/auth.guard';
+import { sortOptions } from './repositories/post.repository';
 
 @Controller('posts')
 export class PostController {
@@ -30,10 +31,11 @@ export class PostController {
   findAll(
     @Query('limit') limit?: string,
     @Query('lastDocId') lastDocId?: string,
+    @Query('sortBy') sortBy?: sortOptions,
     @Request() req?,
   ) {
     const pageSize = limit ? parseInt(limit) : 10;
-    return this.postService.findAll(pageSize, lastDocId, req.user.uid);
+    return this.postService.findAll(pageSize, lastDocId, req.user.uid, sortBy);
   }
 
   @Get('user/:userId')
@@ -42,6 +44,7 @@ export class PostController {
     @Param('userId') userId: string,
     @Query('limit') limit?: string,
     @Query('lastDocId') lastDocId?: string,
+    @Query('sortBy') sortBy?: sortOptions,
     @Request() req?,
   ) {
     const pageSize = limit ? parseInt(limit) : 10;
@@ -50,6 +53,7 @@ export class PostController {
       pageSize,
       lastDocId,
       req.user.uid,
+      sortBy,
     );
   }
 

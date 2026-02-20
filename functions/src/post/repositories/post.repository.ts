@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import * as admin from 'firebase-admin';
 import { Post } from '../entities/post.entity';
 
+export type sortOptions = 'latest' | 'most_liked' | 'most_commented';
+
 @Injectable()
 export class PostRepository {
   private collection = admin.firestore().collection('posts');
@@ -31,8 +33,20 @@ export class PostRepository {
     } as Post;
   }
 
-  async findAll(limit: number, lastDocId?: string) {
-    let query = this.collection.orderBy('createdAt', 'desc').limit(limit + 1);
+  async findAll(limit: number, lastDocId?: string, sortBy?: sortOptions) {
+    let query: admin.firestore.Query = this.collection;
+
+    if (sortBy === 'most_liked') {
+      query = query.orderBy('likesCount', 'desc').orderBy('createdAt', 'desc');
+    } else if (sortBy === 'most_commented') {
+      query = query
+        .orderBy('commentsCount', 'desc')
+        .orderBy('createdAt', 'desc');
+    } else {
+      query = query.orderBy('createdAt', 'desc');
+    }
+
+    query = query.limit(limit + 1);
 
     if (lastDocId) {
       const lastDoc = await this.collection.doc(lastDocId).get();
@@ -52,11 +66,25 @@ export class PostRepository {
     return this.mapDoc(doc);
   }
 
-  async findByUserId(userId: string, limit: number, lastDocId?: string) {
-    let query = this.collection
-      .where('userId', '==', userId)
-      .orderBy('createdAt', 'desc')
-      .limit(limit + 1);
+  async findByUserId(
+    userId: string,
+    limit: number,
+    lastDocId?: string,
+    sortBy?: sortOptions,
+  ) {
+    let query = this.collection.where('userId', '==', userId);
+
+    if (sortBy === 'most_liked') {
+      query = query.orderBy('likesCount', 'desc').orderBy('createdAt', 'desc');
+    } else if (sortBy === 'most_commented') {
+      query = query
+        .orderBy('commentsCount', 'desc')
+        .orderBy('createdAt', 'desc');
+    } else {
+      query = query.orderBy('createdAt', 'desc');
+    }
+
+    query = query.limit(limit + 1);
 
     if (lastDocId) {
       const lastDoc = await this.collection.doc(lastDocId).get();
