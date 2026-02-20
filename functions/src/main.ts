@@ -24,7 +24,7 @@ export const createNestServer = async (expressInstance: express.Express) => {
   );
 
   app.enableCors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
@@ -40,3 +40,4 @@ export const api = functions.https.onRequest(server);
 
 export * from './triggers/reaction-triggers';
 export * from './triggers/comment-triggers';
+export * from './triggers/algolia-triggers';
