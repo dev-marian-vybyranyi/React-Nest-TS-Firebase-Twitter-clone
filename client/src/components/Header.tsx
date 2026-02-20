@@ -3,6 +3,7 @@ import { UserAvatar } from "@/components/ui/user-avatar";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Link } from "react-router-dom";
 import CreatePostDialog from "./post/createPostDialog";
+import { GlobalSearch } from "./Search";
 
 const Header = () => {
   const { user } = useAuthStore();
@@ -14,7 +15,7 @@ const Header = () => {
           <Link to="/">Twitter</Link>
           {user && <CreatePostDialog />}
         </div>
-
+        <GlobalSearch />
         <div className="flex items-center justify-between space-x-2">
           {user ? (
             <nav className="flex items-center">
