@@ -10,13 +10,20 @@ const Header = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white">
-      <div className="container flex h-14 max-w-screen items-center justify-between px-4">
-        <div className="flex items-center justify-between space-x-2 gap-4">
-          <Link to="/">Twitter</Link>
+      <div className="container flex h-14 max-w-screen items-center justify-between px-2 sm:px-4">
+        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+          <Link to="/" className="font-bold hidden sm:block">
+            Twitter
+          </Link>
+          <Link to="/" className="font-bold sm:hidden">
+            X
+          </Link>
           {user && <CreatePostDialog />}
         </div>
-        <GlobalSearch />
-        <div className="flex items-center justify-between space-x-2">
+        <div className="flex-1 flex justify-center mx-2 overflow-hidden">
+          <GlobalSearch />
+        </div>
+        <div className="flex items-center space-x-2 shrink-0">
           {user ? (
             <nav className="flex items-center">
               <Button variant="ghost" size="sm" className="px-0 gap-4" asChild>

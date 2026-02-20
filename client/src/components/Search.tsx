@@ -57,7 +57,7 @@ export const GlobalSearch = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="relative w-full max-w-sm ml-4">
+    <div className="relative w-full max-w-sm">
       <InstantSearch searchClient={searchClient} indexName="posts">
         <GlobalSearchContent isOpen={isOpen} setIsOpen={setIsOpen} />
       </InstantSearch>
@@ -95,7 +95,7 @@ const GlobalSearchContent = ({
       </div>
 
       {isOpen && query.length > 0 && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-xl border border-slate-100 overflow-hidden z-50 max-h-96 overflow-y-auto w-[400px]">
+        <div className="absolute top-full -right-4 sm:right-auto sm:left-0 mt-2 bg-white rounded-lg shadow-xl border border-slate-100 overflow-hidden z-50 max-h-96 overflow-y-auto w-[300px] sm:w-[400px]">
           <Hits
             hitComponent={Hit}
             classNames={{

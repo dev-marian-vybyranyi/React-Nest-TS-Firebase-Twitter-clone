@@ -59,7 +59,7 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen w-full bg-slate-100">
-      <div className="mx-auto max-w-6xl grid gap-6 grid-cols-[350px_1fr]">
+      <div className="mx-auto max-w-6xl grid gap-6 grid-cols-1 md:grid-cols-[250px_1fr] lg:grid-cols-[350px_1fr]">
         <div className="space-y-6">
           <ProfileCard
             user={displayUser}

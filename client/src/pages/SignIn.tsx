@@ -16,7 +16,7 @@ const SignIn = () => {
 
   return (
     <div className="flex h-screen w-screen items-center justify-center bg-slate-100">
-      <Card className="w-[380px] shadow-lg bg-white">
+      <Card className="w-full max-w-[380px] mx-4 sm:mx-0 shadow-lg bg-white">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">
             Sign in to Twitter
