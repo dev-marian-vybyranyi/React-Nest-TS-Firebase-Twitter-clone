@@ -6,9 +6,15 @@ import { PostRepository } from './repositories/post.repository';
 import { StorageModule } from '../storage/storage.module';
 import { PostEventListener } from './listeners/post.listener';
 import { UserModule } from '../user/user.module';
+import { CommentModule } from '../comment/comment.module';
 
 @Module({
-  imports: [StorageModule, forwardRef(() => UserModule), ReactionModule],
+  imports: [
+    StorageModule,
+    forwardRef(() => UserModule),
+    ReactionModule,
+    CommentModule,
+  ],
   controllers: [PostController],
   providers: [PostService, PostRepository, PostEventListener],
   exports: [PostService, PostRepository],

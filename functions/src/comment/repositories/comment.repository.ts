@@ -124,4 +124,11 @@ export class CommentRepository {
       await this.collection.doc(id).delete();
     }
   }
+
+  async deleteByPostId(postId: string): Promise<void> {
+    const snapshot = await this.collection.where('postId', '==', postId).get();
+    const batch = admin.firestore().batch();
+    snapshot.docs.forEach((doc) => batch.delete(doc.ref));
+    await batch.commit();
+  }
 }
