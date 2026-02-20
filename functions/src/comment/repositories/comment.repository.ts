@@ -112,6 +112,36 @@ export class CommentRepository {
     });
   }
 
+  async updateUserInComments(
+    userId: string,
+    user: { name?: string; surname?: string; photo?: string | null },
+  ): Promise<void> {
+    const snapshot = await this.collection
+      .where('authorId', '==', userId)
+      .get();
+    const batch = admin.firestore().batch();
+
+    snapshot.docs.forEach((doc) => {
+      const updates: Record<string, any> = {};
+      const authorUsernameParts: string[] = [];
+      if (user.name) authorUsernameParts.push(user.name);
+      if (user.surname) authorUsernameParts.push(user.surname);
+      if (authorUsernameParts.length > 0) {
+        updates['authorUsername'] = authorUsernameParts.join(' ');
+      }
+
+      if (user.photo !== undefined) {
+        updates['authorPhotoURL'] = user.photo;
+      }
+
+      if (Object.keys(updates).length > 0) {
+        batch.update(doc.ref, updates);
+      }
+    });
+
+    await batch.commit();
+  }
+
   async delete(id: string, parentId?: string | null): Promise<void> {
     if (parentId) {
       const batch = admin.firestore().batch();

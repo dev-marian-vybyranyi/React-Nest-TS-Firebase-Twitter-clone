@@ -89,4 +89,13 @@ export class CommentService {
     }
     return this.commentRepository.delete(id, comment.parentId);
   }
+
+  async updateUserInComments(
+    userId: string,
+    userData: { name?: string; surname?: string; photo?: string | null },
+  ): Promise<void> {
+    try {
+      await this.commentRepository.updateUserInComments(userId, userData);
+    } catch (error) {}
+  }
 }
