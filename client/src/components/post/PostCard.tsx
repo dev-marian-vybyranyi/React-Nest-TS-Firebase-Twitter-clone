@@ -23,13 +23,12 @@ const PostCard = ({ post }: PostCardProps) => {
   return (
     <Card className="overflow-hidden shadow-sm bg-white py-4 gap-6">
       <div className="flex items-center gap-3 px-4">
-        <Link to={`/profile/${post.userId}`} className="shrink-0">
-          <UserAvatar
-            src={post.user?.photo}
-            alt={`${post.user?.name} ${post.user?.surname}`}
-            className="w-10 h-10"
-          />
-        </Link>
+        <UserAvatar
+          userId={post.userId}
+          src={post.user?.photo}
+          alt={`${post.user?.name} ${post.user?.surname}`}
+          className="w-10 h-10"
+        />
         <div className="flex-1 min-w-0">
           <Link
             to={`/profile/${post.userId}`}

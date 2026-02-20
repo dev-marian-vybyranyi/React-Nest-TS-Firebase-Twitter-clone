@@ -20,6 +20,7 @@ const ReplyCard = ({ reply, commentId }: ReplyCardProps) => {
   return (
     <div className="flex gap-3 py-3 px-4 border-l-2 border-slate-200 ml-4 mt-2 bg-slate-100 rounded-md">
       <UserAvatar
+        userId={reply.authorId}
         src={reply.authorPhotoURL}
         alt={reply.authorUsername}
         className="w-8 h-8"

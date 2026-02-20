@@ -25,7 +25,11 @@ const CommentCard = ({ comment }: CommentCardProps) => {
   return (
     <div className="flex flex-col border-t border-slate-200">
       <div className="flex gap-3 p-4">
-        <UserAvatar src={comment.authorPhotoURL} alt={comment.authorUsername} />
+        <UserAvatar
+          userId={comment.authorId}
+          src={comment.authorPhotoURL}
+          alt={comment.authorUsername}
+        />
         <div className="flex flex-col flex-1 w-full">
           <div className="flex items-center gap-2 mb-1">
             <span className="font-bold text-sm text-slate-900">
