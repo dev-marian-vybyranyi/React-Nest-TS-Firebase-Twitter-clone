@@ -7,6 +7,7 @@ import { useReactionStore } from "@/store/useReactionStore";
 import type { Comment } from "@/types/comment";
 import { Form, Formik } from "formik";
 import { Forward } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface CommentFormProps {
   postId: string;
@@ -34,6 +35,7 @@ const CommentForm = ({
     try {
       if (comment) {
         await updateComment(postId, comment.id, user.uid, values.content);
+        toast.success("Comment updated successfully");
         if (onSuccess) onSuccess();
       } else {
         await addComment(
@@ -43,11 +45,13 @@ const CommentForm = ({
           user.photo || null,
           values.content,
         );
+        toast.success("Comment posted successfully");
         incrementComments(postId);
         resetForm();
         if (onSuccess) onSuccess();
       }
     } catch (error) {
+      toast.error("Failed to save comment");
       console.error("Failed to save comment:", error);
     }
   };

@@ -6,6 +6,7 @@ import { useReplyStore } from "@/store/useReplyStore";
 import type { Comment } from "@/types/comment";
 import { Form, Formik } from "formik";
 import { Forward } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface ReplyFormProps {
   commentId: string;
@@ -34,6 +35,7 @@ const ReplyForm = ({
     try {
       if (reply) {
         await updateReply(commentId, reply.id, user.uid, values.content);
+        toast.success("Reply updated successfully");
         if (onSuccess) onSuccess();
       } else {
         await addReply(
@@ -44,10 +46,12 @@ const ReplyForm = ({
           user.photo || null,
           values.content,
         );
+        toast.success("Reply posted successfully");
         resetForm();
         if (onSuccess) onSuccess();
       }
     } catch (error) {
+      toast.error("Failed to save reply");
       console.error("Failed to save reply:", error);
     }
   };
