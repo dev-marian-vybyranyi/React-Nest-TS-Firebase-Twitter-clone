@@ -19,8 +19,8 @@ const CommentCard = ({ comment }: CommentCardProps) => {
   const [isReplying, setIsReplying] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
 
-  const { user } = useAuthStore();
-  const isOwnPost = user?.uid === comment?.authorId;
+  const user = useAuthStore((state) => state.user);
+  const isOwnPost = user?.uid === comment.authorId;
 
   return (
     <div className="flex flex-col border-t border-slate-200">

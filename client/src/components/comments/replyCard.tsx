@@ -14,8 +14,8 @@ interface ReplyCardProps {
 const ReplyCard = ({ reply, commentId }: ReplyCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
 
-  const { user } = useAuthStore();
-  const isOwnPost = user?.uid === reply?.authorId;
+  const user = useAuthStore((state) => state.user);
+  const isOwnPost = user?.uid === reply.authorId;
 
   return (
     <div className="flex gap-3 py-3 px-4 border-l-2 border-slate-200 ml-4 mt-2 bg-slate-100 rounded-md">

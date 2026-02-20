@@ -16,9 +16,9 @@ interface PostCardProps {
 }
 
 const PostCard = ({ post }: PostCardProps) => {
-  const { user } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
   const [showComments, setShowComments] = useState(false);
-  const isOwnPost = user?.uid === post?.userId;
+  const isOwnPost = user?.uid === post.userId;
 
   return (
     <Card className="overflow-hidden shadow-sm bg-white py-4 gap-6">
