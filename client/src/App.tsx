@@ -10,6 +10,7 @@ import Profile from "./pages/Profile";
 import { useAuthStore } from "./store/useAuthStore";
 import { Toaster } from "react-hot-toast";
 import MainLayout from "./layouts/MainLayout";
+import PostPage from "./pages/PostPage";
 
 function App() {
   const { isLoading, setUser, setLoading } = useAuthStore();
@@ -61,6 +62,14 @@ function App() {
           element={
             <MainLayout>
               <Profile />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/post/:id"
+          element={
+            <MainLayout>
+              <PostPage />
             </MainLayout>
           }
         />

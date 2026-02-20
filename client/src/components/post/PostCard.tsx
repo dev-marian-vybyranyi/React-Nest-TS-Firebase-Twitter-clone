@@ -5,7 +5,7 @@ import { formatDate } from "@/lib/utils";
 import { useAuthStore } from "@/store/useAuthStore";
 import type { Post } from "@/types/post";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import CommentForm from "../comments/commentForm";
 import CommentList from "../comments/commentList";
 import PostDropdown from "./PostDropdown";
@@ -19,6 +19,14 @@ const PostCard = ({ post }: PostCardProps) => {
   const user = useAuthStore((state) => state.user);
   const [showComments, setShowComments] = useState(false);
   const isOwnPost = user?.uid === post.userId;
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+
+  const handlePostClick = () => {
+    if (pathname !== `/post/${post.id}`) {
+      navigate(`/post/${post.id}`);
+    }
+  };
 
   return (
     <Card className="overflow-hidden shadow-sm bg-white py-4 gap-6">
@@ -41,14 +49,22 @@ const PostCard = ({ post }: PostCardProps) => {
         {isOwnPost && <PostDropdown post={post} />}
       </div>
 
-      <div className="flex flex-col px-4">
-        <h3 className="font-semibold text-xl leading-tight text-slate-900">
+      <div
+        className={`flex flex-col px-4 ${pathname !== `/post/${post.id}` ? "cursor-pointer group" : ""}`}
+        onClick={handlePostClick}
+      >
+        <h3
+          className={`font-semibold text-xl leading-tight text-slate-900 ${pathname !== `/post/${post.id}` ? "group-hover:text-blue-500 transition-colors" : ""}`}
+        >
           {post.title}
         </h3>
         <p className="text-slate-600 text-base leading-relaxed">{post.text}</p>
       </div>
 
-      <div className="w-full h-auto overflow-hidden">
+      <div
+        className={`w-full h-auto overflow-hidden ${pathname !== `/post/${post.id}` ? "cursor-pointer" : ""}`}
+        onClick={handlePostClick}
+      >
         {post.photo && (
           <img
             src={post.photo}
