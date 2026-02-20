@@ -2,6 +2,7 @@ import { UserAvatar } from "@/components/ui/user-avatar";
 import { formatDate } from "@/lib/utils";
 import type { Comment } from "@/types/comment";
 import { useState } from "react";
+import ReplyDropdown from "./replyDropdown";
 import ReplyForm from "./replyForm";
 
 interface ReplyCardProps {
@@ -13,7 +14,7 @@ const ReplyCard = ({ reply, commentId }: ReplyCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
 
   return (
-    <div className="flex gap-3 py-3 px-4 border-l-2 border-slate-200 ml-4 mt-2 bg-slate-50/50 rounded-r-md">
+    <div className="flex gap-3 py-3 px-4 border-l-2 border-slate-200 ml-4 mt-2 bg-slate-100 rounded-md">
       <UserAvatar
         src={reply.authorPhotoURL}
         alt={reply.authorUsername}
@@ -43,7 +44,13 @@ const ReplyCard = ({ reply, commentId }: ReplyCardProps) => {
           <p className="text-sm text-slate-700">{reply.content}</p>
         )}
       </div>
-      {/* Add reply dropdown */}
+      {isEditing && (
+        <ReplyDropdown
+          reply={reply}
+          commentId={commentId}
+          onEdit={() => setIsEditing(true)}
+        />
+      )}
     </div>
   );
 };
