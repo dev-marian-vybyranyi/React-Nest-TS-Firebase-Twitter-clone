@@ -3,6 +3,7 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  Logger,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CommentRepository } from '../comment/repositories/comment.repository';
@@ -18,6 +19,8 @@ import { PostRepository } from './repositories/post.repository';
 
 @Injectable()
 export class PostService {
+  private readonly logger = new Logger(PostService.name);
+
   constructor(
     private readonly postRepository: PostRepository,
     private readonly userRepository: UserRepository,
@@ -54,9 +57,9 @@ export class PostService {
 
       return newPostData;
     } catch (error) {
-      console.error('Error creating post:', error);
+      this.logger.error('Error creating post', error.stack);
       throw new InternalServerErrorException(
-        error.message || 'Failed to create post',
+        'An unexpected error occurred while creating the post',
       );
     }
   }
@@ -96,7 +99,10 @@ export class PostService {
 
       return { posts: postsWithStats, lastDocId: lastDocIdResult, hasMore };
     } catch (error) {
-      throw new InternalServerErrorException(error.message);
+      this.logger.error('Error fetching posts', error.stack);
+      throw new InternalServerErrorException(
+        'An unexpected error occurred while fetching posts',
+      );
     }
   }
 
@@ -127,7 +133,10 @@ export class PostService {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      throw new InternalServerErrorException(error.message);
+      this.logger.error(`Error fetching post with id ${id}`, error.stack);
+      throw new InternalServerErrorException(
+        'An unexpected error occurred while fetching the post',
+      );
     }
   }
 
@@ -171,7 +180,10 @@ export class PostService {
 
       return { posts: postsWithStats, lastDocId: lastDocIdResult, hasMore };
     } catch (error) {
-      throw new InternalServerErrorException(error.message);
+      this.logger.error(`Error fetching posts for user ${userId}`, error.stack);
+      throw new InternalServerErrorException(
+        'An unexpected error occurred while fetching user posts',
+      );
     }
   }
 
@@ -224,7 +236,10 @@ export class PostService {
       ) {
         throw error;
       }
-      throw new InternalServerErrorException(error.message);
+      this.logger.error(`Error updating post with id ${id}`, error.stack);
+      throw new InternalServerErrorException(
+        'An unexpected error occurred while updating the post',
+      );
     }
   }
 
@@ -259,7 +274,10 @@ export class PostService {
       ) {
         throw error;
       }
-      throw new InternalServerErrorException(error.message);
+      this.logger.error(`Error deleting post with id ${id}`, error.stack);
+      throw new InternalServerErrorException(
+        'An unexpected error occurred while deleting the post',
+      );
     }
   }
 

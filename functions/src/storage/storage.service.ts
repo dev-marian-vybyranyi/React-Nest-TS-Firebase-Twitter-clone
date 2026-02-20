@@ -1,8 +1,13 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import * as admin from 'firebase-admin';
 
 @Injectable()
 export class StorageService {
+  private readonly logger = new Logger(StorageService.name);
   private get bucket() {
     return admin.storage().bucket();
   }
@@ -11,8 +16,9 @@ export class StorageService {
     try {
       await this.bucket.file(filePath).delete();
     } catch (error) {
+      this.logger.error(`Failed to delete file: ${filePath}`, error.stack);
       throw new InternalServerErrorException(
-        `Failed to delete file: ${filePath}`,
+        'An unexpected error occurred while deleting the file',
       );
     }
   }

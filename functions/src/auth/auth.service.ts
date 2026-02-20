@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import * as admin from 'firebase-admin';
 import { ReactionRepository } from 'src/reaction/repositories/reaction.repository';
 import { UserRepository } from 'src/user/repositories/user.repository';
@@ -10,6 +15,8 @@ import { Auth } from './entities/auth.entity';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly postService: PostService,
     private readonly reactionRepository: ReactionRepository,
@@ -44,7 +51,10 @@ export class AuthService {
       if (error.code === 'auth/email-already-exists') {
         throw new BadRequestException('User with this email already exists');
       }
-      throw new BadRequestException(error.message);
+      this.logger.error('Error during signup', error.stack);
+      throw new InternalServerErrorException(
+        'An unexpected error occurred during signup',
+      );
     }
   }
 
@@ -90,7 +100,10 @@ export class AuthService {
         } as Auth,
       };
     } catch (error) {
-      throw new BadRequestException(error.message);
+      this.logger.error('Error during Google login', error.stack);
+      throw new InternalServerErrorException(
+        'An unexpected error occurred during Google login',
+      );
     }
   }
 
@@ -164,7 +177,10 @@ export class AuthService {
 
       return { message: 'User deleted successfully' };
     } catch (error) {
-      throw new BadRequestException(error.message);
+      this.logger.error('Error deleting user', error.stack);
+      throw new InternalServerErrorException(
+        'An unexpected error occurred while deleting user account',
+      );
     }
   }
 }

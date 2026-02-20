@@ -2,6 +2,7 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  Logger,
 } from '@nestjs/common';
 import { CommentService } from '../comment/comment.service';
 import { PostService } from '../post/post.service';
@@ -11,6 +12,8 @@ import { UserRepository } from './repositories/user.repository';
 
 @Injectable()
 export class UserService {
+  private readonly logger = new Logger(UserService.name);
+
   constructor(
     private readonly postService: PostService,
     private readonly userRepository: UserRepository,
@@ -28,7 +31,10 @@ export class UserService {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      throw new InternalServerErrorException(error.message);
+      this.logger.error(`Failed to get user by id ${id}`, error.stack);
+      throw new InternalServerErrorException(
+        'An unexpected error occurred while fetching the user',
+      );
     }
   }
 
@@ -65,7 +71,10 @@ export class UserService {
 
       return { message: 'User updated successfully', user: updateData };
     } catch (error) {
-      throw new InternalServerErrorException(error.message);
+      this.logger.error(`Failed to update user with id ${id}`, error.stack);
+      throw new InternalServerErrorException(
+        'An unexpected error occurred while updating the user',
+      );
     }
   }
 }
