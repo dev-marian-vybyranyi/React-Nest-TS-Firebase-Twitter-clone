@@ -26,8 +26,12 @@ export const createNestServer = async (expressInstance: express.Express) => {
     }),
   );
 
+  const origins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',')
+    : [];
+
   app.enableCors({
-    origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
+    origin: origins,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });

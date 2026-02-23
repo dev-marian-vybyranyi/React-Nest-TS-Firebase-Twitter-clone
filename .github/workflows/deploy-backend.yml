@@ -28,6 +28,13 @@ jobs:
         working-directory: functions
         run: npm ci
 
+      - name: Create .env file
+        working-directory: functions
+        run: |
+          echo "CORS_ORIGIN=${{ secrets.CORS_ORIGIN }}" >> .env
+          echo "ALGOLIA_APP_ID=${{ secrets.ALGOLIA_APP_ID }}" >> .env
+          echo "ALGOLIA_ADMIN_KEY=${{ secrets.ALGOLIA_ADMIN_KEY }}" >> .env
+
       - name: Build
         working-directory: functions
         run: npm run build
