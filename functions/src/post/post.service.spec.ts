@@ -6,6 +6,8 @@ import { ReactionRepository } from '../reaction/repositories/reaction.repository
 import { CommentRepository } from '../comment/repositories/comment.repository';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { NotFoundException, ForbiddenException } from '@nestjs/common';
+import { User } from '../user/entities/user.entity';
+import { Post } from './entities/post.entity';
 
 describe('PostService', () => {
   let service: PostService;
@@ -52,12 +54,12 @@ describe('PostService', () => {
         name: 'Marian',
         surname: 'Kvit',
         photo: 'img.jpg',
-      } as any);
+      } as User);
       postRepository.create.mockResolvedValue({
         id: 'p1',
         title: 'Test Title',
         text: 'T',
-      } as any);
+      } as Post);
 
       const result = await service.create(
         { title: 'Test Title', text: 'T' },
@@ -76,7 +78,7 @@ describe('PostService', () => {
 
   describe('findOne', () => {
     it('should fetch a post correctly', async () => {
-      postRepository.findOne.mockResolvedValue({ id: 'p1' } as any);
+      postRepository.findOne.mockResolvedValue({ id: 'p1' } as Post);
       const result = await service.findOne('p1', 'user1');
       expect(result.id).toBe('p1');
     });
@@ -92,12 +94,12 @@ describe('PostService', () => {
   describe('update', () => {
     it('should update text when the user is the owner', async () => {
       postRepository.findOne
-        .mockResolvedValue({ id: 'p1', userId: 'owner' } as any)
+        .mockResolvedValue({ id: 'p1', userId: 'owner' } as Post)
         .mockResolvedValue({
           id: 'p1',
           userId: 'owner',
           text: 'New content',
-        } as any);
+        } as Post);
 
       await service.update('p1', { text: 'New content' }, 'owner');
       expect(postRepository.update).toHaveBeenCalledWith(
@@ -110,7 +112,7 @@ describe('PostService', () => {
       postRepository.findOne.mockResolvedValue({
         id: 'p1',
         userId: 'owner',
-      } as any);
+      } as Post);
       await expect(
         service.update('p1', { text: 'Hacked' }, 'not-owner'),
       ).rejects.toThrow(ForbiddenException);
@@ -122,7 +124,7 @@ describe('PostService', () => {
       postRepository.findOne.mockResolvedValue({
         id: 'p1',
         userId: 'owner',
-      } as any);
+      } as Post);
       await service.remove('p1', 'owner');
       expect(postRepository.delete).toHaveBeenCalledWith('p1');
     });
@@ -131,7 +133,7 @@ describe('PostService', () => {
       postRepository.findOne.mockResolvedValue({
         id: 'p1',
         userId: 'owner',
-      } as any);
+      } as Post);
       await expect(service.remove('p1', 'not-owner')).rejects.toThrow(
         ForbiddenException,
       );

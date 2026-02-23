@@ -96,7 +96,7 @@ export class CommentService {
   ): Promise<void> {
     try {
       await this.commentRepository.updateUserInComments(userId, userData);
-    } catch (error) {}
+    } catch {}
   }
 
   async deleteByUserId(userId: string): Promise<void> {

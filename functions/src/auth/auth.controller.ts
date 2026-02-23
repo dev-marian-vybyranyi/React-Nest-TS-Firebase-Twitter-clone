@@ -4,6 +4,13 @@ import { CreateAuthDto } from './dto/create-auth.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
 import { SignInDto } from './dto/signIn.dto';
 import { AuthGuard } from '../common/guards/auth.guard';
+import { Request } from 'express';
+
+interface RequestWithUser extends Request {
+  user: {
+    uid: string;
+  };
+}
 
 @Controller('auth')
 export class AuthController {
@@ -26,7 +33,7 @@ export class AuthController {
 
   @UseGuards(AuthGuard)
   @Delete('delete')
-  deleteAccount(@Req() req) {
+  deleteAccount(@Req() req: RequestWithUser) {
     return this.authService.deleteUser(req.user.uid);
   }
 }

@@ -13,6 +13,7 @@ import { CreateAuthDto } from './dto/create-auth.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
 import { SignInDto } from './dto/signIn.dto';
 import { Auth } from './entities/auth.entity';
+import { User } from '../user/entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -37,19 +38,20 @@ export class AuthService {
 
       await this.userRepository.create({
         id: userRecord.uid,
-        email: userRecord.email,
+        email: userRecord.email || '',
         name,
         surname,
         photo: photo || null,
         createdAt: new Date(),
-      } as any);
+      } as User);
 
       return {
         uid: userRecord.uid,
         email: userRecord.email,
         message: 'User created successfully',
       };
-    } catch (error) {
+    } catch (e) {
+      const error = e as Error & { code?: string };
       if (error.code === 'auth/email-already-exists') {
         throw new BadRequestException('User with this email already exists');
       }
@@ -65,7 +67,9 @@ export class AuthService {
       const decodedToken = await admin
         .auth()
         .verifyIdToken(googleLoginDto.token);
-      const { email, uid, name: googleName, picture: photo } = decodedToken;
+      const { email, uid } = decodedToken;
+      const googleName = String(decodedToken.name || '');
+      const photo = String(decodedToken.picture || '');
 
       const name = googleName ? googleName.split(' ')[0] : '';
       const surname =
@@ -83,7 +87,7 @@ export class AuthService {
           surname,
           photo: photo || null,
           createdAt: new Date(),
-        } as any);
+        } as User);
         console.log(`Created new user profile for ${email}`);
       } else {
         console.log(`User ${email} already exists. Logging in...`);
@@ -101,7 +105,8 @@ export class AuthService {
           photo: userData?.photo,
         } as Auth,
       };
-    } catch (error) {
+    } catch (e) {
+      const error = e as Error;
       this.logger.error('Error during Google login', error.stack);
       throw new InternalServerErrorException(
         'An unexpected error occurred during Google login',
@@ -112,11 +117,13 @@ export class AuthService {
   async signIn(signInDto: SignInDto) {
     try {
       const decodedToken = await admin.auth().verifyIdToken(signInDto.token);
-      const { email, uid, name: googleName, picture: photo } = decodedToken;
+      const { email, uid } = decodedToken;
+      const googleName = String(decodedToken.name || '');
+      const photo = String(decodedToken.picture || '');
 
       const user = await this.userRepository.findOne(uid);
 
-      let userData;
+      let userData: User;
 
       if (!user) {
         const name = googleName ? googleName.split(' ')[0] : '';
@@ -132,9 +139,9 @@ export class AuthService {
           surname,
           photo: photo || null,
           createdAt: new Date(),
-        };
+        } as User;
 
-        await this.userRepository.create(userData as any);
+        await this.userRepository.create(userData);
       } else {
         userData = user;
       }
@@ -149,7 +156,7 @@ export class AuthService {
           photo: userData?.photo,
         } as Auth,
       };
-    } catch (error) {
+    } catch {
       throw new BadRequestException('Invalid token');
     }
   }
@@ -179,8 +186,7 @@ export class AuthService {
       await admin.auth().deleteUser(uid);
 
       return { message: 'User deleted successfully' };
-    } catch (error) {
-      this.logger.error('Error deleting user', error.stack);
+    } catch {
       throw new InternalServerErrorException(
         'An unexpected error occurred while deleting user account',
       );

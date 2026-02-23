@@ -4,6 +4,7 @@ import { CommentService } from '../comment/comment.service';
 import { PostService } from '../post/post.service';
 import { UserRepository } from './repositories/user.repository';
 import { UserService } from './user.service';
+import { User } from './entities/user.entity';
 
 describe('UserService', () => {
   let service: UserService;
@@ -39,7 +40,7 @@ describe('UserService', () => {
       userRepository.findOne.mockResolvedValue({
         id: '1',
         name: 'Test',
-      } as any);
+      } as User);
       const user = await service.getUserById('1');
       expect(user).toEqual({ id: '1', name: 'Test' });
       expect(userRepository.findOne).toHaveBeenCalledWith('1');
@@ -61,8 +62,8 @@ describe('UserService', () => {
         surname: 'User',
         photo: 'p1.jpg',
       };
-      userRepository.findOne.mockResolvedValue(existingUser as any);
-      userRepository.updateUser.mockResolvedValue(undefined as any);
+      userRepository.findOne.mockResolvedValue(existingUser as User);
+      userRepository.updateUser.mockResolvedValue(undefined);
 
       await service.updateUser('u1', { name: 'New' });
 
@@ -80,7 +81,7 @@ describe('UserService', () => {
     });
 
     it('should not notify related services if name, surname, and photo are missing', async () => {
-      userRepository.findOne.mockResolvedValue({ id: 'u1' } as any);
+      userRepository.findOne.mockResolvedValue({ id: 'u1' } as User);
 
       const result = await service.updateUser('u1', {});
 

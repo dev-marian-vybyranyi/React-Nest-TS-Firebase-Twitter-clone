@@ -4,6 +4,7 @@ import { PostService } from '../post/post.service';
 import { CommentService } from '../comment/comment.service';
 import { ReactionRepository } from '../reaction/repositories/reaction.repository';
 import { UserRepository } from '../user/repositories/user.repository';
+import { User } from '../user/entities/user.entity';
 import { BadRequestException } from '@nestjs/common';
 import * as admin from 'firebase-admin';
 
@@ -51,7 +52,7 @@ describe('AuthService', () => {
           .fn()
           .mockResolvedValue({ uid: 'test-uid', email: 'test@test.com' }),
       });
-      userRepository.create.mockResolvedValue(undefined as any);
+      userRepository.create.mockResolvedValue(undefined);
 
       const result = await service.signup({
         email: 'test@test.com',
@@ -89,7 +90,7 @@ describe('AuthService', () => {
           .fn()
           .mockResolvedValue({ uid: 'test-uid', email: 'test@test.com' }),
       });
-      userRepository.findOne.mockResolvedValue({ id: 'test-uid' } as any);
+      userRepository.findOne.mockResolvedValue({ id: 'test-uid' } as User);
 
       const result = await service.googleLogin({ token: 'token' });
       expect(result.user.uid).toBe('test-uid');
@@ -101,7 +102,7 @@ describe('AuthService', () => {
     it('should remove the user entirely including their avatar, posts, etc.', async () => {
       userRepository.findOne.mockResolvedValue({
         photo: 'http://link-to-photo.jpg',
-      } as any);
+      } as User);
       (admin.storage as unknown as jest.Mock).mockReturnValue({
         bucket: jest.fn().mockReturnValue({
           file: jest.fn().mockReturnValue({ delete: jest.fn() }),

@@ -26,8 +26,9 @@ export class UserService {
       if (!user) {
         throw new NotFoundException('User not found');
       }
-      return user as User;
-    } catch (error) {
+      return user;
+    } catch (e) {
+      const error = e as Error;
       if (error instanceof NotFoundException) {
         throw error;
       }
@@ -70,7 +71,8 @@ export class UserService {
       }
 
       return { message: 'User updated successfully', user: updateData };
-    } catch (error) {
+    } catch (e) {
+      const error = e as Error;
       this.logger.error(`Failed to update user with id ${id}`, error.stack);
       throw new InternalServerErrorException(
         'An unexpected error occurred while updating the user',

@@ -1,12 +1,12 @@
-import * as admin from 'firebase-admin';
 import {
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
-  NotFoundException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import * as admin from 'firebase-admin';
 import { CommentRepository } from '../comment/repositories/comment.repository';
 import { ReactionType } from '../reaction/entities/reaction.entity';
 import { ReactionRepository } from '../reaction/repositories/reaction.repository';
@@ -57,7 +57,8 @@ export class PostService {
       const newPostData = await this.postRepository.create(postData);
 
       return newPostData;
-    } catch (error) {
+    } catch (e) {
+      const error = e as Error;
       this.logger.error('Error creating post', error.stack);
       throw new InternalServerErrorException(
         'An unexpected error occurred while creating the post',
@@ -104,7 +105,8 @@ export class PostService {
         posts.length > 0 ? posts[posts.length - 1].id : null;
 
       return { posts: postsWithStats, lastDocId: lastDocIdResult, hasMore };
-    } catch (error) {
+    } catch (e) {
+      const error = e as Error;
       this.logger.error('Error fetching posts', error.stack);
       throw new InternalServerErrorException(
         'An unexpected error occurred while fetching posts',
@@ -135,7 +137,8 @@ export class PostService {
         dislikes: post.dislikesCount || 0,
         userReaction,
       };
-    } catch (error) {
+    } catch (e) {
+      const error = e as Error;
       if (error instanceof NotFoundException) {
         throw error;
       }
@@ -187,7 +190,8 @@ export class PostService {
         posts.length > 0 ? posts[posts.length - 1].id : null;
 
       return { posts: postsWithStats, lastDocId: lastDocIdResult, hasMore };
-    } catch (error) {
+    } catch (e) {
+      const error = e as Error;
       this.logger.error(`Error fetching posts for user ${userId}`, error.stack);
       throw new InternalServerErrorException(
         'An unexpected error occurred while fetching user posts',
@@ -237,7 +241,8 @@ export class PostService {
       }
 
       return updatedPost;
-    } catch (error) {
+    } catch (e) {
+      const error = e as Error;
       if (
         error instanceof NotFoundException ||
         error instanceof ForbiddenException
@@ -275,7 +280,8 @@ export class PostService {
       await this.commentRepository.deleteByPostId(id);
 
       return { message: 'Post deleted successfully' };
-    } catch (error) {
+    } catch (e) {
+      const error = e as Error;
       if (
         error instanceof NotFoundException ||
         error instanceof ForbiddenException
@@ -295,7 +301,11 @@ export class PostService {
   ): Promise<void> {
     try {
       await this.postRepository.updateUserInPosts(userId, userData);
-    } catch (error) {}
+    } catch {
+      this.logger.error(
+        `Error updating user in posts for user with id ${userId}`,
+      );
+    }
   }
 
   async deleteAllPostsByUserId(userId: string): Promise<void> {

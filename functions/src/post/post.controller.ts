@@ -15,6 +15,13 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { AuthGuard } from '../common/guards/auth.guard';
 import { sortOptions } from './repositories/post.repository';
+import { Request as ExpressRequest } from 'express';
+
+interface RequestWithUser extends ExpressRequest {
+  user: {
+    uid: string;
+  };
+}
 
 @Controller('posts')
 export class PostController {
@@ -22,7 +29,10 @@ export class PostController {
 
   @Post()
   @UseGuards(AuthGuard)
-  create(@Body() createPostDto: CreatePostDto, @Request() req) {
+  create(
+    @Body() createPostDto: CreatePostDto,
+    @Request() req: RequestWithUser,
+  ) {
     return this.postService.create(createPostDto, req.user.uid);
   }
 
@@ -32,10 +42,10 @@ export class PostController {
     @Query('limit') limit?: string,
     @Query('lastDocId') lastDocId?: string,
     @Query('sortBy') sortBy?: sortOptions,
-    @Request() req?,
+    @Request() req?: RequestWithUser,
   ) {
     const pageSize = limit ? parseInt(limit) : 10;
-    return this.postService.findAll(pageSize, lastDocId, req.user.uid, sortBy);
+    return this.postService.findAll(pageSize, lastDocId, req?.user.uid, sortBy);
   }
 
   @Get('user/:userId')
@@ -45,22 +55,22 @@ export class PostController {
     @Query('limit') limit?: string,
     @Query('lastDocId') lastDocId?: string,
     @Query('sortBy') sortBy?: sortOptions,
-    @Request() req?,
+    @Request() req?: RequestWithUser,
   ) {
     const pageSize = limit ? parseInt(limit) : 10;
     return this.postService.findByUserId(
       userId,
       pageSize,
       lastDocId,
-      req.user.uid,
+      req?.user.uid,
       sortBy,
     );
   }
 
   @Get(':id')
   @UseGuards(AuthGuard)
-  findOne(@Param('id') id: string, @Request() req?) {
-    return this.postService.findOne(id, req.user.uid);
+  findOne(@Param('id') id: string, @Request() req?: RequestWithUser) {
+    return this.postService.findOne(id, req?.user.uid);
   }
 
   @Patch(':id')
@@ -68,14 +78,14 @@ export class PostController {
   update(
     @Param('id') id: string,
     @Body() updatePostDto: UpdatePostDto,
-    @Request() req,
+    @Request() req: RequestWithUser,
   ) {
     return this.postService.update(id, updatePostDto, req.user.uid);
   }
 
   @Delete(':id')
   @UseGuards(AuthGuard)
-  remove(@Param('id') id: string, @Request() req) {
+  remove(@Param('id') id: string, @Request() req: RequestWithUser) {
     return this.postService.remove(id, req.user.uid);
   }
 }

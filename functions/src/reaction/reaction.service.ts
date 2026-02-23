@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ReactionRepository } from './repositories/reaction.repository';
-import { ReactionEntity, ReactionType } from './entities/reaction.entity';
+import { ReactionType } from './entities/reaction.entity';
 
 @Injectable()
 export class ReactionService {
