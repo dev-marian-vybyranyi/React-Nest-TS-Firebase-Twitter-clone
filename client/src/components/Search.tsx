@@ -25,9 +25,15 @@ type PostHit = {
   };
   photo?: string;
   text?: string;
+  title?: string;
 } & Record<string, unknown>;
 
 const Hit = ({ hit }: { hit: PostHit }) => {
+  const userName =
+    hit.user?.name || hit.user?.surname
+      ? `${hit.user?.name || ""} ${hit.user?.surname || ""}`.trim()
+      : "Unknown User";
+
   return (
     <Link
       to={`/post/${hit.objectID}`}
@@ -42,15 +48,18 @@ const Hit = ({ hit }: { hit: PostHit }) => {
               className="w-5 h-5 rounded-full object-cover"
             />
           ) : (
-            <div className="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-[10px] text-slate-500">
-              {hit.user?.name?.[0]?.toUpperCase() || "?"}
+            <div className="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-[10px] text-slate-500 uppercase">
+              {userName[0] || "?"}
             </div>
           )}
-          <span className="font-bold text-sm text-slate-900">
-            {hit.user?.name} {hit.user?.surname}
+          <span className="font-bold text-sm text-slate-900 line-clamp-1">
+            {userName}
           </span>
         </div>
-        <div className="text-sm text-slate-700">
+        <div className="text-sm font-semibold text-slate-800 line-clamp-1">
+          <Highlight attribute="title" hit={hit} />
+        </div>
+        <div className="text-xs text-slate-600 line-clamp-2 mt-0.5">
           <Highlight attribute="text" hit={hit} />
         </div>
       </div>
