@@ -3,7 +3,7 @@ import { UserAvatar } from "@/components/ui/user-avatar";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Link } from "react-router-dom";
 import { MobileBurgerMenu } from "./MobileBurgerMenu";
-import CreatePostDialog from "./post/createPostDialog";
+import CreatePostDialog from "./post/CreatePostDialog";
 import { GlobalSearch } from "./Search";
 
 const Header = () => {

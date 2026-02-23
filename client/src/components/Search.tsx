@@ -14,7 +14,20 @@ const searchClient = algoliasearch(
   import.meta.env.VITE_ALGOLIA_SEARCH_KEY || "",
 );
 
-const Hit = ({ hit }: { hit: any }) => {
+type PostHit = {
+  objectID: string;
+  __position: number;
+  __queryID?: string;
+  user?: {
+    photo?: string;
+    name?: string;
+    surname?: string;
+  };
+  photo?: string;
+  text?: string;
+} & Record<string, unknown>;
+
+const Hit = ({ hit }: { hit: PostHit }) => {
   return (
     <Link
       to={`/post/${hit.objectID}`}

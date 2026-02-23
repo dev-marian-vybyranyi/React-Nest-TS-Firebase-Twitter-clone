@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { api } from "@/api/axios";
 import type { Post, PostsResponse } from "@/types/post";
+import type { AppError } from "@/types/error";
 
 interface PostState {
   posts: Post[];
@@ -60,7 +61,8 @@ export const usePostStore = create<PostState>((set) => ({
         hasMore: response.data.hasMore,
         loading: false,
       }));
-    } catch (error: any) {
+    } catch (e) {
+      const error = e as AppError;
       set({
         loading: false,
         error: error.message || "Failed to fetch posts",
@@ -78,7 +80,8 @@ export const usePostStore = create<PostState>((set) => ({
         posts: [response.data, ...state.posts],
         loading: false,
       }));
-    } catch (error: any) {
+    } catch (e) {
+      const error = e as AppError;
       set({ loading: false, error: error.message || "Failed to create post" });
       throw error;
     }
@@ -94,7 +97,8 @@ export const usePostStore = create<PostState>((set) => ({
         ),
         loading: false,
       }));
-    } catch (error: any) {
+    } catch (e) {
+      const error = e as AppError;
       set({ loading: false, error: error.message || "Failed to update post" });
       throw error;
     }
@@ -108,7 +112,8 @@ export const usePostStore = create<PostState>((set) => ({
         posts: state.posts.filter((post) => post.id !== postId),
         loading: false,
       }));
-    } catch (error: any) {
+    } catch (e) {
+      const error = e as AppError;
       set({ loading: false, error: error.message || "Failed to delete post" });
       throw error;
     }

@@ -7,6 +7,7 @@ import {
 } from "firebase/storage";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
+import type { AppError } from "@/types/error";
 
 interface UseUploadPhotoReturn {
   uploadPhoto: (file: File, path: string) => Promise<string | null>;
@@ -78,7 +79,8 @@ export const useUploadPhoto = (): UseUploadPhotoReturn => {
       const storageRef = ref(storage, path);
       await deleteObject(storageRef);
       return true;
-    } catch (error: any) {
+    } catch (e) {
+      const error = e as AppError;
       if (error.code === "storage/object-not-found") {
         return true;
       }

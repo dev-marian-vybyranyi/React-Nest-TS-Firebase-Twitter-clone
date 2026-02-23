@@ -10,6 +10,7 @@ import { User } from "lucide-react";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import AuthInput from "../auth/AuthInput";
+import type { AppError } from "@/types/error";
 
 interface EditProfileFormProps {
   onSuccess?: () => void;
@@ -59,7 +60,8 @@ const EditProfileForm = ({ onSuccess, onCancel }: EditProfileFormProps) => {
       await updateProfile(cleanedValues);
       toast.success("Profile updated successfully!");
       onSuccess?.();
-    } catch (error: any) {
+    } catch (e) {
+      const error = e as AppError;
       toast.error(error?.message || "Failed to update profile");
     }
   };

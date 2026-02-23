@@ -4,6 +4,7 @@ import AuthInput from "./AuthInput";
 import { Button } from "../ui/button";
 import { useAuthStore } from "@/store/useAuthStore";
 import { toast } from "react-hot-toast";
+import type { AppError } from "@/types/error";
 
 interface ChangePasswordFormProps {
   onSuccess?: () => void;
@@ -27,7 +28,8 @@ const ChangePasswordForm = ({
       await changePassword(values.currentPassword, values.newPassword);
       toast.success("Password changed successfully!");
       onSuccess?.();
-    } catch (error: any) {
+    } catch (e) {
+      const error = e as AppError;
       if (error.code === "auth/invalid-credential") {
         toast.error("Current password is incorrect");
       } else if (error.code === "auth/weak-password") {

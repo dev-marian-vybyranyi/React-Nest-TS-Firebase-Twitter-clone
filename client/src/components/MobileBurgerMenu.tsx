@@ -11,7 +11,7 @@ import type { User } from "@/types/user";
 import { Menu } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import CreatePostDialog from "./post/createPostDialog";
+import CreatePostDialog from "./post/CreatePostDialog";
 
 interface MobileBurgerMenuProps {
   user: User | null;

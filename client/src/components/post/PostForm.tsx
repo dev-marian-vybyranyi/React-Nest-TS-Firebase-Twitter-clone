@@ -1,4 +1,5 @@
 import { Form, Formik } from "formik";
+import type { FormikHelpers } from "formik";
 import { PostSchema } from "@/schemas/post";
 import AuthInput from "../auth/AuthInput";
 import { PhotoUpload } from "../ui/PhotoUpload";
@@ -32,7 +33,7 @@ const PostForm = ({ post, onSuccess, onCancel }: PostFormProps) => {
 
   const handleSubmit = async (
     values: typeof initialValues,
-    { resetForm }: any,
+    { resetForm }: FormikHelpers<typeof initialValues>,
   ) => {
     if (!user) return;
 

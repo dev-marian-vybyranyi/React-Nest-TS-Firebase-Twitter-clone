@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { api } from "@/api/axios";
 import type { User } from "@/types/user";
+import type { AppError } from "@/types/error";
 
 interface UserState {
   viewedUser: User | null;
@@ -24,10 +25,12 @@ export const useUserStore = create<UserState>((set) => ({
         uid: response.data.id || response.data.uid,
       };
       set({ viewedUser: userData, loading: false });
-    } catch (error: any) {
+    } catch (e) {
+      const error = e as AppError;
+      const message = error.response?.data?.message || "Failed to fetch user";
       set({
         loading: false,
-        error: error.response?.data?.message || "Failed to fetch user",
+        error: Array.isArray(message) ? message[0] : message,
       });
       throw error;
     }

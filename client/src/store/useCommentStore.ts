@@ -1,6 +1,7 @@
 import { api } from "@/api/axios";
 import type { Comment } from "@/types/comment";
 import { create } from "zustand";
+import type { AppError } from "@/types/error";
 
 interface CommentState {
   comments: Record<string, Comment[]>;
@@ -47,7 +48,8 @@ export const useCommentStore = create<CommentState>((set) => ({
         comments: { ...state.comments, [postId]: response.data.docs },
         loadingStates: { ...state.loadingStates, [postId]: false },
       }));
-    } catch (error: any) {
+    } catch (e) {
+      const error = e as AppError;
       set((state) => ({
         loadingStates: { ...state.loadingStates, [postId]: false },
         errors: {
@@ -89,7 +91,8 @@ export const useCommentStore = create<CommentState>((set) => ({
         },
         loadingStates: { ...state.loadingStates, [postId]: false },
       }));
-    } catch (error: any) {
+    } catch (e) {
+      const error = e as AppError;
       set((state) => ({
         loadingStates: { ...state.loadingStates, [postId]: false },
         errors: {
@@ -120,7 +123,8 @@ export const useCommentStore = create<CommentState>((set) => ({
         },
         loadingStates: { ...state.loadingStates, [postId]: false },
       }));
-    } catch (error: any) {
+    } catch (e) {
+      const error = e as AppError;
       set((state) => ({
         loadingStates: { ...state.loadingStates, [postId]: false },
         errors: {
@@ -152,7 +156,8 @@ export const useCommentStore = create<CommentState>((set) => ({
         },
         loadingStates: { ...state.loadingStates, [postId]: false },
       }));
-    } catch (error: any) {
+    } catch (e) {
+      const error = e as AppError;
       set((state) => ({
         loadingStates: { ...state.loadingStates, [postId]: false },
         errors: {

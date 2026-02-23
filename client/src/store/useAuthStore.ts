@@ -12,6 +12,7 @@ import {
   updatePassword,
 } from "firebase/auth";
 import { create } from "zustand";
+import type { AppError } from "@/types/error";
 
 interface AuthState {
   user: User | null;
@@ -41,6 +42,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   setLoading: (loading) => set({ isLoading: loading }),
 
   signUp: async ({ confirmPassword, ...signUpData }: SignUpFormValues) => {
+    void confirmPassword;
     set({ isLoading: true, error: null });
 
     try {
@@ -62,7 +64,8 @@ export const useAuthStore = create<AuthState>((set) => ({
         },
         isLoading: false,
       });
-    } catch (error: any) {
+    } catch (e) {
+      const error = e as AppError;
       const message =
         error.response?.data?.message || "Signup failed. Please try again.";
       set({
@@ -97,7 +100,8 @@ export const useAuthStore = create<AuthState>((set) => ({
         },
         isLoading: false,
       });
-    } catch (error: any) {
+    } catch (e) {
+      const error = e as AppError;
       const message =
         error.response?.data?.message || "Signin failed. Please try again.";
       set({
@@ -113,7 +117,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       await auth.signOut();
       set({ user: null, isLoading: false });
-    } catch (error: any) {
+    } catch (e) {
+      const error = e as AppError;
       set({ error: error.message, isLoading: false });
     }
   },
@@ -136,7 +141,8 @@ export const useAuthStore = create<AuthState>((set) => ({
         },
         isLoading: false,
       });
-    } catch (error: any) {
+    } catch (e) {
+      const error = e as AppError;
       const message =
         error.response?.data?.message ||
         "Google Sign-In failed. Please try again.";
@@ -154,7 +160,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       await api.delete("/auth/delete");
       await auth.signOut();
       set({ user: null, isLoading: false });
-    } catch (error: any) {
+    } catch (e) {
+      const error = e as AppError;
       set({ error: error.message, isLoading: false });
     }
   },
@@ -171,7 +178,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       }));
 
       return data;
-    } catch (error: any) {
+    } catch (e) {
+      const error = e as AppError;
       const message =
         error.response?.data?.message || "Update failed. Please try again.";
       set({
@@ -199,7 +207,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       await updatePassword(user, newPassword);
 
       set({ isLoading: false });
-    } catch (error: any) {
+    } catch (e) {
+      const error = e as AppError;
       set({ isLoading: false, error: error.message });
       throw error;
     }
@@ -210,7 +219,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       await sendPasswordResetEmail(auth, email);
       set({ isLoading: false });
-    } catch (error: any) {
+    } catch (e) {
+      const error = e as AppError;
       set({ isLoading: false, error: error.message });
       throw error;
     }

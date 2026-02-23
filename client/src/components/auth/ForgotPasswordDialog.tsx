@@ -14,6 +14,7 @@ import { toast } from "react-hot-toast";
 import AuthInput from "./AuthInput";
 import { Mail } from "lucide-react";
 import { ForgotPasswordSchema } from "@/schemas/auth";
+import type { AppError } from "@/types/error";
 
 interface ForgotPasswordDialogProps {
   trigger?: React.ReactNode;
@@ -28,7 +29,8 @@ const ForgotPasswordDialog = ({ trigger }: ForgotPasswordDialogProps) => {
       await resetPassword(values.email);
       toast.success("Password reset email sent! Check your inbox.");
       setOpen(false);
-    } catch (error: any) {
+    } catch (e) {
+      const error = e as AppError;
       if (error.code === "auth/user-not-found") {
         toast.error("No account found with this email");
       } else {
