@@ -20,7 +20,7 @@ const ReplyDropdown = ({ reply, commentId, onEdit }: ReplyDropdownProps) => {
     try {
       await deleteReply(commentId, reply.id, user.uid);
       toast.success("Reply deleted successfully");
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete reply");
     }
   };

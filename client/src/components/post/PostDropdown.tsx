@@ -25,7 +25,7 @@ const PostDropdown = ({ post }: PostDropdownProps) => {
     try {
       await deletePost(post.id);
       toast.success("Post deleted successfully");
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete post");
     }
   };

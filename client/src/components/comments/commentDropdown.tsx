@@ -19,7 +19,7 @@ const CommentDropdown = ({ comment, onEdit }: CommentDropdownProps) => {
     try {
       await deleteComment(comment.postId, comment.id, user.uid);
       toast.success("Comment deleted successfully");
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete comment");
     }
   };

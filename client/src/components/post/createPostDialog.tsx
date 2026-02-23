@@ -11,7 +11,7 @@ import { Plus } from "lucide-react";
 import PostForm from "./PostForm";
 import { useState } from "react";
 
-const createPostDialog = () => {
+const CreatePostDialog = () => {
   const [open, setOpen] = useState(false);
 
   return (
@@ -36,4 +36,4 @@ const createPostDialog = () => {
   );
 };
 
-export default createPostDialog;
+export default CreatePostDialog;
