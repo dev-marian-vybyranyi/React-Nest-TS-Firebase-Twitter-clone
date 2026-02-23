@@ -3,6 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import express from 'express';
+import helmet from 'helmet';
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 
@@ -15,6 +16,8 @@ export const createNestServer = async (expressInstance: express.Express) => {
     AppModule,
     new ExpressAdapter(expressInstance),
   );
+
+  app.use(helmet());
 
   app.useGlobalPipes(
     new ValidationPipe({
