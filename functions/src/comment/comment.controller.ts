@@ -7,10 +7,12 @@ import {
   Delete,
   Query,
   Patch,
+  UseGuards,
 } from '@nestjs/common';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { CommentService } from './comment.service';
+import { AuthGuard } from '../common/guards/auth.guard';
 
 @Controller('comment')
 export class CommentController {
@@ -35,6 +37,7 @@ export class CommentController {
   }
 
   @Post()
+  @UseGuards(AuthGuard)
   async create(@Body() createCommentDto: CreateCommentDto) {
     return this.commentService.create(
       createCommentDto.postId,
