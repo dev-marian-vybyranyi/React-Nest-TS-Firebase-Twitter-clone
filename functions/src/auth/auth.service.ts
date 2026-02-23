@@ -5,8 +5,8 @@ import {
   Logger,
 } from '@nestjs/common';
 import * as admin from 'firebase-admin';
-import { ReactionRepository } from 'src/reaction/repositories/reaction.repository';
-import { UserRepository } from 'src/user/repositories/user.repository';
+import { ReactionRepository } from '../reaction/repositories/reaction.repository';
+import { UserRepository } from '../user/repositories/user.repository';
 import { PostService } from '../post/post.service';
 import { CommentService } from '../comment/comment.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
