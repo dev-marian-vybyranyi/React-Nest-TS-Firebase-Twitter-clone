@@ -41,7 +41,11 @@ export const usePostStore = create<PostState>((set) => ({
 
     if (append && (loading || !hasMore || !lastDocId)) return;
 
-    set({ loading: true, error: null });
+    set({
+      loading: true,
+      error: null,
+      ...(!append && { posts: [], lastDocId: null }),
+    });
 
     try {
       const baseUrl = userId ? `/posts/user/${userId}` : "/posts";
