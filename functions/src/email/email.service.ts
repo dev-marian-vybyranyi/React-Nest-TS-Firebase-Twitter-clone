@@ -22,7 +22,7 @@ export class EmailService {
     name: string,
     verifyLink: string,
   ): Promise<void> {
-    const from = process.env.MAIL_FROM || 'noreply@twitterclone.dev';
+    const from = process.env.RESEND_FROM || 'noreply@twitterclone.dev';
 
     await this.transporter.sendMail({
       from: `"Twitter Clone" <${from}>`,
@@ -70,7 +70,7 @@ export class EmailService {
     name: string,
     resetLink: string,
   ): Promise<void> {
-    const from = process.env.MAIL_FROM || 'noreply@twitterclone.dev';
+    const from = process.env.RESEND_FROM || 'noreply@twitterclone.dev';
 
     await this.transporter.sendMail({
       from: `"Twitter Clone" <${from}>`,
