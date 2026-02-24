@@ -93,7 +93,7 @@ const GlobalSearchContent = ({
       />
 
       {isOpen && query.length > 0 && (
-        <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-xl border border-slate-100 z-50 max-h-96 overflow-y-auto w-[300px] sm:w-[400px]">
+        <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-xl border border-slate-100 z-9999 max-h-96 overflow-y-auto w-[300px] sm:w-[400px]">
           <Hits
             hitComponent={Hit}
             classNames={{
