@@ -33,7 +33,11 @@ jobs:
         run: |
           echo "CORS_ORIGIN=${{ secrets.CORS_ORIGIN }}" >> .env
           echo "ALGOLIA_APP_ID=${{ secrets.ALGOLIA_APP_ID }}" >> .env
-          echo "ALGOLIA_ADMIN_KEY=${{ secrets.ALGOLIA_ADMIN_KEY }}" >> .env
+          echo "RESEND_HOST=${{ secrets.RESEND_HOST }}" >> .env
+          echo "RESEND_PORT=${{ secrets.RESEND_PORT }}" >> .env
+          echo "RESEND_USER=${{ secrets.RESEND_USER }}" >> .env
+          echo "RESEND_PASS=${{ secrets.RESEND_PASS }}" >> .env
+          echo "RESEND_FROM=${{ secrets.RESEND_FROM }}" >> .env
 
       - name: Build
         working-directory: functions
