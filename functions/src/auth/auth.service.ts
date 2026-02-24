@@ -49,9 +49,15 @@ export class AuthService {
       } as User);
 
       try {
-        const verifyLink = await admin
+        const firebaseVerifyLink = await admin
           .auth()
           .generateEmailVerificationLink(email);
+
+        const verifyUrl = new URL(firebaseVerifyLink);
+        const oobCode = verifyUrl.searchParams.get('oobCode');
+        const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+        const verifyLink = `${clientUrl}/verify-email?oobCode=${oobCode}`;
+
         await this.emailService.sendVerificationEmail(email, name, verifyLink);
       } catch (emailError) {
         this.logger.warn(
