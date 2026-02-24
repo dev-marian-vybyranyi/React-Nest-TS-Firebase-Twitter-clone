@@ -1,6 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CommentService } from './comment.service';
 import { CommentRepository } from './repositories/comment.repository';
+import * as admin from 'firebase-admin';
+
+jest.mock('firebase-admin', () => ({
+  firestore: jest.fn(),
+}));
 import {
   NotFoundException,
   ForbiddenException,
@@ -23,6 +28,17 @@ describe('CommentService', () => {
       updateUserInComments: jest.fn(),
       deleteByUserId: jest.fn(),
     };
+
+    const mockTransaction = {
+      get: jest.fn(),
+      set: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    };
+
+    (admin.firestore as unknown as jest.Mock).mockReturnValue({
+      runTransaction: jest.fn().mockImplementation((cb) => cb(mockTransaction)),
+    });
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -71,6 +87,7 @@ describe('CommentService', () => {
           authorId: 'user1',
           content: 'new comment',
         }),
+        expect.anything(),
       );
     });
 
@@ -118,7 +135,11 @@ describe('CommentService', () => {
       } as any);
       await service.remove('1', 'user1');
 
-      expect(repository.delete).toHaveBeenCalledWith('1', null);
+      expect(repository.delete).toHaveBeenCalledWith(
+        '1',
+        null,
+        expect.anything(),
+      );
     });
 
     it('should soft delete a comment if it has replies', async () => {
@@ -129,7 +150,10 @@ describe('CommentService', () => {
       } as any);
       await service.remove('1', 'user1');
 
-      expect(repository.softDelete).toHaveBeenCalledWith('1');
+      expect(repository.softDelete).toHaveBeenCalledWith(
+        '1',
+        expect.anything(),
+      );
     });
   });
 });

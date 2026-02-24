@@ -25,8 +25,13 @@ export class CommentRepository {
     } as Comment;
   }
 
-  async findOne(id: string): Promise<Comment | null> {
-    const doc = await this.collection.doc(id).get();
+  async findOne(
+    id: string,
+    transaction?: FirebaseFirestore.Transaction,
+  ): Promise<Comment | null> {
+    const doc = transaction
+      ? await transaction.get(this.collection.doc(id))
+      : await this.collection.doc(id).get();
     return this.mapDoc(doc);
   }
 
@@ -71,45 +76,80 @@ export class CommentRepository {
 
   async create(
     comment: Omit<Comment, 'id' | 'createdAt' | 'updatedAt'>,
+    transaction?: FirebaseFirestore.Transaction,
   ): Promise<Comment> {
     const now = FieldValue.serverTimestamp();
+    const newRef = this.collection.doc();
 
     if (comment.parentId) {
-      const batch = admin.firestore().batch();
-      const newRef = this.collection.doc();
-      const parentRef = this.collection.doc(comment.parentId);
+      if (transaction) {
+        const parentRef = this.collection.doc(comment.parentId);
+        transaction.set(newRef, { ...comment, createdAt: now, updatedAt: now });
+        transaction.update(parentRef, { replyCount: FieldValue.increment(1) });
+        return {
+          id: newRef.id,
+          ...comment,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as Comment;
+      } else {
+        const batch = admin.firestore().batch();
+        const parentRef = this.collection.doc(comment.parentId);
+        batch.set(newRef, { ...comment, createdAt: now, updatedAt: now });
+        batch.update(parentRef, { replyCount: FieldValue.increment(1) });
+        await batch.commit();
+        const doc = await newRef.get();
+        return this.mapDoc(doc) as Comment;
+      }
+    }
 
-      batch.set(newRef, { ...comment, createdAt: now, updatedAt: now });
-      batch.update(parentRef, { replyCount: FieldValue.increment(1) });
-
-      await batch.commit();
-
+    if (transaction) {
+      transaction.set(newRef, { ...comment, createdAt: now, updatedAt: now });
+      return {
+        id: newRef.id,
+        ...comment,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as Comment;
+    } else {
+      await newRef.set({ ...comment, createdAt: now, updatedAt: now });
       const doc = await newRef.get();
       return this.mapDoc(doc) as Comment;
     }
-
-    const ref = await this.collection.add({
-      ...comment,
-      createdAt: now,
-      updatedAt: now,
-    });
-    const doc = await ref.get();
-    return this.mapDoc(doc) as Comment;
   }
 
-  async update(id: string, updateData: Partial<Comment>): Promise<void> {
-    await this.collection.doc(id).update({
+  async update(
+    id: string,
+    updateData: Partial<Comment>,
+    transaction?: FirebaseFirestore.Transaction | FirebaseFirestore.WriteBatch,
+  ): Promise<void> {
+    const docRef = this.collection.doc(id);
+    const data = {
       ...updateData,
       updatedAt: FieldValue.serverTimestamp(),
-    });
+    };
+    if (transaction) {
+      (transaction as any).update(docRef, data);
+    } else {
+      await docRef.update(data);
+    }
   }
 
-  async softDelete(id: string): Promise<void> {
-    await this.collection.doc(id).update({
+  async softDelete(
+    id: string,
+    transaction?: FirebaseFirestore.Transaction | FirebaseFirestore.WriteBatch,
+  ): Promise<void> {
+    const docRef = this.collection.doc(id);
+    const data = {
       isDeleted: true,
       content: '[Comment deleted]',
       updatedAt: FieldValue.serverTimestamp(),
-    });
+    };
+    if (transaction) {
+      (transaction as any).update(docRef, data);
+    } else {
+      await docRef.update(data);
+    }
   }
 
   async updateUserInComments(
@@ -158,16 +198,32 @@ export class CommentRepository {
     await Promise.all(batches);
   }
 
-  async delete(id: string, parentId?: string | null): Promise<void> {
+  async delete(
+    id: string,
+    parentId?: string | null,
+    transaction?: FirebaseFirestore.Transaction,
+  ): Promise<void> {
+    const docRef = this.collection.doc(id);
     if (parentId) {
-      const batch = admin.firestore().batch();
-      batch.delete(this.collection.doc(id));
-      batch.update(this.collection.doc(parentId), {
-        replyCount: FieldValue.increment(-1),
-      });
-      await batch.commit();
+      if (transaction) {
+        transaction.delete(docRef);
+        transaction.update(this.collection.doc(parentId), {
+          replyCount: FieldValue.increment(-1),
+        });
+      } else {
+        const batch = admin.firestore().batch();
+        batch.delete(docRef);
+        batch.update(this.collection.doc(parentId), {
+          replyCount: FieldValue.increment(-1),
+        });
+        await batch.commit();
+      }
     } else {
-      await this.collection.doc(id).delete();
+      if (transaction) {
+        transaction.delete(docRef);
+      } else {
+        await docRef.delete();
+      }
     }
   }
 

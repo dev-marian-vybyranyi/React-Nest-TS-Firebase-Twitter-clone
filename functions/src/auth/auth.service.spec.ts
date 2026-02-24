@@ -12,6 +12,7 @@ import * as admin from 'firebase-admin';
 jest.mock('firebase-admin', () => ({
   auth: jest.fn(),
   storage: jest.fn(),
+  firestore: jest.fn(),
 }));
 
 describe('AuthService', () => {
@@ -49,6 +50,17 @@ describe('AuthService', () => {
       ],
     }).compile();
 
+    (admin.firestore as unknown as jest.Mock).mockReturnValue({
+      runTransaction: jest.fn().mockImplementation((cb) =>
+        cb({
+          get: jest.fn(),
+          set: jest.fn(),
+          update: jest.fn(),
+          delete: jest.fn(),
+        }),
+      ),
+    });
+
     service = module.get<AuthService>(AuthService);
     userRepository = module.get(UserRepository);
     postService = module.get(PostService);
@@ -77,36 +89,58 @@ describe('AuthService', () => {
       expect(userRepository.create).toHaveBeenCalled();
     });
 
-    it('should throw an error if the email already exists in Firebase', async () => {
+    it('should throw an error and rollback Auth user if Firestore fails', async () => {
+      const deleteUserMock = jest.fn().mockResolvedValue(undefined);
       (admin.auth as unknown as jest.Mock).mockReturnValue({
         createUser: jest
           .fn()
-          .mockRejectedValue({ code: 'auth/email-already-exists' }),
+          .mockResolvedValue({ uid: 'test-uid', email: 'test@test.com' }),
+        deleteUser: deleteUserMock,
       });
+      userRepository.create.mockRejectedValue(new Error('Firestore failed'));
 
       await expect(
         service.signup({
-          email: 'exist@test.com',
+          email: 'error@test.com',
           password: 'pass',
           name: 'Marian',
           surname: 'Kvit',
         }),
-      ).rejects.toThrow(ConflictException);
+      ).rejects.toThrow('Firestore failed');
+
+      expect(deleteUserMock).toHaveBeenCalledWith('test-uid');
     });
   });
 
   describe('googleLogin', () => {
-    it('should login an existing user from Firestore', async () => {
+    it('should login an existing user from Firestore using a transaction', async () => {
+      const transactionMock = {
+        get: jest.fn(),
+        set: jest.fn(),
+        update: jest.fn(),
+      };
+      (admin.firestore as unknown as jest.Mock).mockReturnValue({
+        runTransaction: jest
+          .fn()
+          .mockImplementation((cb) => cb(transactionMock)),
+      });
       (admin.auth as unknown as jest.Mock).mockReturnValue({
         verifyIdToken: jest
           .fn()
           .mockResolvedValue({ uid: 'test-uid', email: 'test@test.com' }),
       });
-      userRepository.findOne.mockResolvedValue({ id: 'test-uid' } as User);
+      userRepository.findOne.mockResolvedValue({
+        id: 'test-uid',
+        name: 'Marian',
+        surname: 'Kvit',
+      } as User);
 
       const result = await service.googleLogin({ token: 'token' });
       expect(result.user.uid).toBe('test-uid');
-      expect(userRepository.create).not.toHaveBeenCalled();
+      expect(userRepository.findOne).toHaveBeenCalledWith(
+        'test-uid',
+        transactionMock,
+      );
     });
   });
 

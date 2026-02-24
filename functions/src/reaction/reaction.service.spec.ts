@@ -1,6 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ReactionService } from './reaction.service';
 import { ReactionRepository } from './repositories/reaction.repository';
+import * as admin from 'firebase-admin';
+
+jest.mock('firebase-admin', () => ({
+  firestore: jest.fn(),
+}));
 
 describe('ReactionService', () => {
   let service: ReactionService;
@@ -14,6 +19,17 @@ describe('ReactionService', () => {
       countByPostAndType: jest.fn(),
     };
 
+    const mockTransaction = {
+      get: jest.fn(),
+      set: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    };
+
+    (admin.firestore as unknown as jest.Mock).mockReturnValue({
+      runTransaction: jest.fn().mockImplementation((cb) => cb(mockTransaction)),
+    });
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ReactionService,
@@ -23,33 +39,44 @@ describe('ReactionService', () => {
 
     service = module.get<ReactionService>(ReactionService);
     repository = module.get(ReactionRepository);
+    (service as any).transaction = mockTransaction;
   });
 
   describe('react', () => {
     it('should add a new reaction if none exists', async () => {
       repository.findOne.mockResolvedValue(null);
       await service.react('user1', 'post1', 'like');
-      expect(repository.upsert).toHaveBeenCalledWith({
-        userId: 'user1',
-        postId: 'post1',
-        type: 'like',
-      });
+      expect(repository.upsert).toHaveBeenCalledWith(
+        {
+          userId: 'user1',
+          postId: 'post1',
+          type: 'like',
+        },
+        expect.anything(),
+      );
     });
 
     it('should remove the reaction if clicking the same type again (toggle)', async () => {
       repository.findOne.mockResolvedValue({ type: 'like' } as any);
       await service.react('user1', 'post1', 'like');
-      expect(repository.delete).toHaveBeenCalledWith('user1', 'post1');
+      expect(repository.delete).toHaveBeenCalledWith(
+        'user1',
+        'post1',
+        expect.anything(),
+      );
     });
 
     it('should overwrite the reaction if changing from like to dislike', async () => {
       repository.findOne.mockResolvedValue({ type: 'like' } as any);
       await service.react('user1', 'post1', 'dislike');
-      expect(repository.upsert).toHaveBeenCalledWith({
-        userId: 'user1',
-        postId: 'post1',
-        type: 'dislike',
-      });
+      expect(repository.upsert).toHaveBeenCalledWith(
+        {
+          userId: 'user1',
+          postId: 'post1',
+          type: 'dislike',
+        },
+        expect.anything(),
+      );
     });
   });
 

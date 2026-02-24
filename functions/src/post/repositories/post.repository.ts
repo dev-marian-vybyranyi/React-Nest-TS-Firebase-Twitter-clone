@@ -8,10 +8,19 @@ export type sortOptions = 'latest' | 'most_liked' | 'most_commented';
 export class PostRepository {
   private collection = admin.firestore().collection('posts');
 
-  async create(post: Omit<Post, 'id'>): Promise<Post> {
-    const ref = await this.collection.add(post);
-    const doc = await ref.get();
-    return this.mapDoc(doc) as Post;
+  async create(
+    post: Omit<Post, 'id'>,
+    transaction?: FirebaseFirestore.Transaction | FirebaseFirestore.WriteBatch,
+  ): Promise<Post> {
+    const docRef = this.collection.doc();
+    if (transaction) {
+      (transaction as any).set(docRef, post);
+      return { id: docRef.id, ...post } as Post;
+    } else {
+      await docRef.set(post);
+      const doc = await docRef.get();
+      return this.mapDoc(doc) as Post;
+    }
   }
 
   private mapDoc(doc: FirebaseFirestore.DocumentSnapshot): Post | null {
@@ -61,8 +70,13 @@ export class PostRepository {
     };
   }
 
-  async findOne(id: string): Promise<Post | null> {
-    const doc = await this.collection.doc(id).get();
+  async findOne(
+    id: string,
+    transaction?: FirebaseFirestore.Transaction,
+  ): Promise<Post | null> {
+    const doc = transaction
+      ? await transaction.get(this.collection.doc(id))
+      : await this.collection.doc(id).get();
     return this.mapDoc(doc);
   }
 
@@ -104,12 +118,29 @@ export class PostRepository {
     return snapshot.docs.map((doc) => this.mapDoc(doc) as Post);
   }
 
-  async update(id: string, updateData: Partial<Post>): Promise<void> {
-    await this.collection.doc(id).update(updateData);
+  async update(
+    id: string,
+    updateData: Partial<Post>,
+    transaction?: FirebaseFirestore.Transaction | FirebaseFirestore.WriteBatch,
+  ): Promise<void> {
+    const docRef = this.collection.doc(id);
+    if (transaction) {
+      (transaction as any).update(docRef, updateData);
+    } else {
+      await docRef.update(updateData);
+    }
   }
 
-  async delete(id: string): Promise<void> {
-    await this.collection.doc(id).delete();
+  async delete(
+    id: string,
+    transaction?: FirebaseFirestore.Transaction | FirebaseFirestore.WriteBatch,
+  ): Promise<void> {
+    const docRef = this.collection.doc(id);
+    if (transaction) {
+      (transaction as any).delete(docRef);
+    } else {
+      await docRef.delete();
+    }
   }
 
   async updateUserInPosts(

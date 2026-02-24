@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
+import * as admin from 'firebase-admin';
 import { CommentRepository } from './repositories/comment.repository';
 import { Comment } from './entities/comment.entity';
 
@@ -39,25 +40,33 @@ export class CommentService {
     content: string,
     parentId?: string,
   ): Promise<Comment> {
-    if (parentId) {
-      const parent = await this.commentRepository.findOne(parentId);
-      if (!parent) throw new NotFoundException('Parent comment not found');
-      if (parent.parentId !== null) {
-        throw new BadRequestException(
-          'You can only reply to top-level comments',
+    return admin.firestore().runTransaction(async (transaction) => {
+      if (parentId) {
+        const parent = await this.commentRepository.findOne(
+          parentId,
+          transaction,
         );
+        if (!parent) throw new NotFoundException('Parent comment not found');
+        if (parent.parentId !== null) {
+          throw new BadRequestException(
+            'You can only reply to top-level comments',
+          );
+        }
       }
-    }
 
-    return this.commentRepository.create({
-      postId,
-      authorId,
-      authorUsername,
-      authorPhotoURL,
-      content,
-      parentId: parentId ?? null,
-      replyCount: 0,
-      isDeleted: false,
+      return this.commentRepository.create(
+        {
+          postId,
+          authorId,
+          authorUsername,
+          authorPhotoURL,
+          content,
+          parentId: parentId ?? null,
+          replyCount: 0,
+          isDeleted: false,
+        },
+        transaction,
+      );
     });
   }
 
@@ -79,15 +88,17 @@ export class CommentService {
   }
 
   async remove(id: string, requesterId: string): Promise<void> {
-    const comment = await this.commentRepository.findOne(id);
-    if (!comment) throw new NotFoundException('Comment not found');
-    if (comment.authorId !== requesterId) {
-      throw new ForbiddenException('You can only delete your own comments');
-    }
-    if (comment.replyCount > 0) {
-      return this.commentRepository.softDelete(id);
-    }
-    return this.commentRepository.delete(id, comment.parentId);
+    return admin.firestore().runTransaction(async (transaction) => {
+      const comment = await this.commentRepository.findOne(id, transaction);
+      if (!comment) throw new NotFoundException('Comment not found');
+      if (comment.authorId !== requesterId) {
+        throw new ForbiddenException('You can only delete your own comments');
+      }
+      if (comment.replyCount > 0) {
+        return this.commentRepository.softDelete(id, transaction);
+      }
+      return this.commentRepository.delete(id, comment.parentId, transaction);
+    });
   }
 
   async updateUserInComments(

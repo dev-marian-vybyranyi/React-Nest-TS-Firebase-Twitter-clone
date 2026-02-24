@@ -12,17 +12,33 @@ export class ReactionRepository {
 
   async upsert(
     reaction: Omit<ReactionEntity, 'id' | 'createdAt'>,
+    transaction?: FirebaseFirestore.Transaction | FirebaseFirestore.WriteBatch,
   ): Promise<void> {
     const docId = this.getDocId(reaction.userId, reaction.postId);
-    await this.collection.doc(docId).set({
+    const docRef = this.collection.doc(docId);
+    const data = {
       ...reaction,
       createdAt: new Date(),
-    });
+    };
+    if (transaction) {
+      (transaction as any).set(docRef, data);
+    } else {
+      await docRef.set(data);
+    }
   }
 
-  async delete(userId: string, postId: string): Promise<void> {
+  async delete(
+    userId: string,
+    postId: string,
+    transaction?: FirebaseFirestore.Transaction | FirebaseFirestore.WriteBatch,
+  ): Promise<void> {
     const docId = this.getDocId(userId, postId);
-    await this.collection.doc(docId).delete();
+    const docRef = this.collection.doc(docId);
+    if (transaction) {
+      (transaction as any).delete(docRef);
+    } else {
+      await docRef.delete();
+    }
   }
 
   async deleteByPostId(postId: string): Promise<void> {
@@ -70,9 +86,12 @@ export class ReactionRepository {
   async findOne(
     userId: string,
     postId: string,
+    transaction?: FirebaseFirestore.Transaction,
   ): Promise<ReactionEntity | null> {
     const docId = this.getDocId(userId, postId);
-    const doc = await this.collection.doc(docId).get();
+    const doc = transaction
+      ? await transaction.get(this.collection.doc(docId))
+      : await this.collection.doc(docId).get();
     return doc.exists ? (doc.data() as ReactionEntity) : null;
   }
 

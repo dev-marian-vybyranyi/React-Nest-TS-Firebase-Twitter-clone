@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import * as admin from 'firebase-admin';
 import { ReactionRepository } from './repositories/reaction.repository';
 import { ReactionType } from './entities/reaction.entity';
 
@@ -11,14 +12,23 @@ export class ReactionService {
     postId: string,
     type: ReactionType,
   ): Promise<void> {
-    const existing = await this.reactionRepository.findOne(userId, postId);
+    await admin.firestore().runTransaction(async (transaction) => {
+      const existing = await this.reactionRepository.findOne(
+        userId,
+        postId,
+        transaction,
+      );
 
-    if (existing?.type === type) {
-      await this.reactionRepository.delete(userId, postId);
-      return;
-    }
+      if (existing?.type === type) {
+        await this.reactionRepository.delete(userId, postId, transaction);
+        return;
+      }
 
-    await this.reactionRepository.upsert({ userId, postId, type });
+      await this.reactionRepository.upsert(
+        { userId, postId, type },
+        transaction,
+      );
+    });
   }
 
   async remove(userId: string, postId: string): Promise<void> {

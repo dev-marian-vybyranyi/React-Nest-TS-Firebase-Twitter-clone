@@ -31,14 +31,14 @@ export class AuthService {
   async signup(createAuthDto: CreateAuthDto) {
     const { email, password, name, surname, photo } = createAuthDto;
 
-    try {
-      const userRecord = await admin.auth().createUser({
-        email,
-        password,
-        displayName: `${name} ${surname}`,
-        photoURL: photo && photo.trim() !== '' ? photo : undefined,
-      });
+    const userRecord = await admin.auth().createUser({
+      email,
+      password,
+      displayName: `${name} ${surname}`,
+      photoURL: photo && photo.trim() !== '' ? photo : undefined,
+    });
 
+    try {
       await this.userRepository.create({
         id: userRecord.uid,
         email: userRecord.email || '',
@@ -51,10 +51,10 @@ export class AuthService {
 
       try {
         await this.emailService.sendVerificationLink(email, name);
-      } catch (error) {
+      } catch (emailError) {
         this.logger.warn(
           `Failed to send verification email to ${email}`,
-          (error as Error).message,
+          (emailError as Error).message,
         );
       }
 
@@ -64,6 +64,8 @@ export class AuthService {
         message: 'User created successfully',
       };
     } catch (e) {
+      await admin.auth().deleteUser(userRecord.uid);
+
       const error = e as Error & { code?: string };
       if (error.code === 'auth/email-already-exists') {
         throw new ConflictException('User with this email already exists');
@@ -73,58 +75,66 @@ export class AuthService {
   }
 
   async googleLogin(googleLoginDto: GoogleLoginDto) {
-    const decodedToken = await admin.auth().verifyIdToken(googleLoginDto.token);
-    const { email, uid } = decodedToken;
-    const googleName = String(decodedToken.name || '');
-    const photo = String(decodedToken.picture || '');
+    return admin.firestore().runTransaction(async (transaction) => {
+      const decodedToken = await admin
+        .auth()
+        .verifyIdToken(googleLoginDto.token);
+      const { email, uid } = decodedToken;
+      const googleName = String(decodedToken.name || '');
+      const photo = String(decodedToken.picture || '');
 
-    const name = googleName ? googleName.split(' ')[0] : '';
-    const surname =
-      googleName && googleName.split(' ').length > 1
-        ? googleName.split(' ')[1]
-        : '';
+      const user = await this.userRepository.findOne(uid, transaction);
 
-    const user = await this.userRepository.findOne(uid);
+      let userData: Partial<User>;
 
-    if (!user) {
-      await this.userRepository.create({
-        id: uid,
-        email,
-        name,
-        surname,
-        photo: photo || null,
-        emailVerified: true,
-        createdAt: new Date(),
-      } as User);
-      console.log(`Created new user profile for ${email}`);
-    } else {
-      await this.userRepository.updateUser(uid, { emailVerified: true });
-      console.log(`User ${email} already exists. Logging in...`);
-    }
+      if (!user) {
+        const name = googleName ? googleName.split(' ')[0] : '';
+        const surname =
+          googleName && googleName.split(' ').length > 1
+            ? googleName.split(' ')[1]
+            : '';
 
-    const userData = user || { name, surname, photo };
+        userData = {
+          id: uid,
+          email,
+          name,
+          surname,
+          photo: photo || null,
+          emailVerified: true,
+          createdAt: new Date(),
+        } as User;
+        await this.userRepository.create(userData as User, transaction);
+        this.logger.log(`Created new user profile for ${email}`);
+      } else {
+        userData = { emailVerified: true };
+        await this.userRepository.updateUser(uid, userData, transaction);
+        this.logger.log(`User ${email} already exists. Logging in...`);
+      }
 
-    return {
-      message: 'Google auth successful',
-      user: {
-        email,
-        uid,
-        name: userData?.name,
-        surname: userData?.surname,
-        photo: userData?.photo,
-      } as Auth,
-    };
+      const finalUser = user || userData;
+
+      return {
+        message: 'Google auth successful',
+        user: {
+          email,
+          uid,
+          name: finalUser?.name,
+          surname: finalUser?.surname,
+          photo: finalUser?.photo,
+        } as Auth,
+      };
+    });
   }
 
   async signIn(signInDto: SignInDto) {
-    try {
+    return admin.firestore().runTransaction(async (transaction) => {
       const decodedToken = await admin.auth().verifyIdToken(signInDto.token);
       const { email, uid } = decodedToken;
       const googleName = String(decodedToken.name || '');
       const photo = String(decodedToken.picture || '');
       const emailVerified = decodedToken.email_verified ?? false;
 
-      const user = await this.userRepository.findOne(uid);
+      const user = await this.userRepository.findOne(uid, transaction);
 
       let userData: User;
 
@@ -145,11 +155,15 @@ export class AuthService {
           createdAt: new Date(),
         } as User;
 
-        await this.userRepository.create(userData);
+        await this.userRepository.create(userData, transaction);
       } else {
         userData = user;
         if (emailVerified && !user.emailVerified) {
-          await this.userRepository.updateUser(uid, { emailVerified: true });
+          await this.userRepository.updateUser(
+            uid,
+            { emailVerified: true },
+            transaction,
+          );
           userData = { ...user, emailVerified: true };
         }
       }
@@ -165,9 +179,7 @@ export class AuthService {
           emailVerified: userData?.emailVerified ?? emailVerified,
         } as Auth,
       };
-    } catch {
-      throw new BadRequestException('Invalid token');
-    }
+    });
   }
 
   async forgotPassword(email: string) {
@@ -178,26 +190,35 @@ export class AuthService {
   async deleteUser(uid: string) {
     const userData = await this.userRepository.findOne(uid);
 
-    if (userData?.photo) {
+    if (!userData) {
+      throw new ConflictException('User not found');
+    }
+
+    if (userData.photo) {
       try {
         const match = userData.photo.match(/\/o\/([^?]+)/);
         if (match) {
           const filePath = decodeURIComponent(match[1]);
           await admin.storage().bucket().file(filePath).delete();
-          console.log(`Deleted user profile photo: ${filePath}`);
+          this.logger.log(`Deleted user profile photo: ${filePath}`);
         }
       } catch (error) {
-        console.error('Error deleting user profile photo:', error);
+        this.logger.warn(
+          `Failed to delete user profile photo: ${userData.photo}`,
+          (error as Error).message,
+        );
       }
     }
 
     await this.postService.deleteAllPostsByUserId(uid);
     await this.commentService.deleteByUserId(uid);
+    await this.reactionRepository.deleteByUserId(uid);
 
     await this.userRepository.delete(uid);
-    await this.reactionRepository.deleteByUserId(uid);
+
     await admin.auth().deleteUser(uid);
 
+    this.logger.log(`User ${uid} deleted successfully`);
     return { message: 'User deleted successfully' };
   }
 }
