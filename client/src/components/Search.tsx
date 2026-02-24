@@ -95,13 +95,14 @@ const GlobalSearchContent = ({
       </div>
 
       {isOpen && query.length > 0 && (
-        <div className="absolute top-full -right-4 sm:right-auto sm:left-0 mt-2 bg-white rounded-lg shadow-xl border border-slate-100 overflow-hidden z-50 max-h-96 overflow-y-auto w-[300px] sm:w-[400px]">
+        <div className="absolute top-full -right-4 sm:right-auto sm:left-0 mt-2 bg-white rounded-lg shadow-xl border border-slate-100 z-50 max-h-96 overflow-y-auto w-[300px] sm:w-[400px]">
           <Hits
             hitComponent={Hit}
             classNames={{
               root: "w-full",
-              list: "flex flex-col",
+              list: "flex flex-col divide-y divide-slate-100",
               item: "w-full",
+              emptyRoot: "p-4 text-sm text-slate-500 text-center",
             }}
           />
         </div>
