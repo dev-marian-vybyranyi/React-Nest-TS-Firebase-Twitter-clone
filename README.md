@@ -22,6 +22,7 @@ A full-stack Twitter clone built with modern web technologies, featuring real-ti
 - **Database:** [Firestore](https://firebase.google.com/docs/firestore)
 - **Storage:** [Firebase Storage](https://firebase.google.com/docs/storage)
 - **Search Engine:** [Algolia](https://www.algolia.com/)
+- **Email Service:** [Resend](https://resend.com/) (via SMTP / Nodemailer)
 - **Validation:** [Class-validator](https://github.com/typestack/class-validator)
 
 ---
@@ -29,6 +30,8 @@ A full-stack Twitter clone built with modern web technologies, featuring real-ti
 ## ✨ Features
 
 - **Authentication:** Secure sign-up and sign-in via Firebase Authentication.
+- **Email Verification:** Sends a verification email after registration via Resend SMTP.
+- **Password Reset:** Sends a password reset link to the user's email via Resend SMTP.
 - **Micro-blogging:** Create, Edit, and Delete posts (tweets).
 - **Engagement:** Like posts and reply with comments.
 - **Search:** Instant full-text search for users and posts powered by Algolia.
@@ -58,6 +61,7 @@ A full-stack Twitter clone built with modern web technologies, featuring real-ti
 - Node.js (v18+ recommended)
 - Firebase CLI (`npm install -g firebase-tools`)
 - Algolia Account (for search functionality)
+- [Resend](https://resend.com/) Account (for transactional emails)
 
 ### 1. Clone the repository
 
