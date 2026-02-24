@@ -7,9 +7,11 @@ export class EmailService {
   private readonly transporter: nodemailer.Transporter;
 
   constructor() {
+    const port = Number(process.env.RESEND_PORT) || 587;
     this.transporter = nodemailer.createTransport({
-      host: process.env.RESEND_HOST,
-      port: Number(process.env.RESEND_PORT),
+      host: process.env.RESEND_HOST || 'smtp.resend.com',
+      port,
+      secure: port === 465,
       auth: {
         user: process.env.RESEND_USER,
         pass: process.env.RESEND_PASS,
