@@ -21,7 +21,7 @@ const Header = () => {
           {user && <CreatePostDialog />}
         </div>
 
-        <div className="flex-1 flex justify-center mx-2 overflow-hidden">
+        <div className="flex-1 flex justify-center mx-2 overflow-visible">
           <GlobalSearch />
         </div>
 
