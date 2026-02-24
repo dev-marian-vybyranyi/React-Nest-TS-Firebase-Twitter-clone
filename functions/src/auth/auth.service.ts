@@ -188,15 +188,19 @@ export class AuthService {
 
   async forgotPassword(email: string) {
     try {
-      const resetLink = await admin.auth().generatePasswordResetLink(email);
+      const firebaseLink = await admin.auth().generatePasswordResetLink(email);
+
+      const url = new URL(firebaseLink);
+      const oobCode = url.searchParams.get('oobCode');
+      const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+      const resetLink = `${clientUrl}/reset-password?oobCode=${oobCode}`;
 
       let name = 'User';
       try {
         const userRecord = await admin.auth().getUserByEmail(email);
         const displayName = userRecord.displayName || '';
         name = displayName.split(' ')[0] || 'User';
-      } catch {
-      }
+      } catch {}
 
       await this.emailService.sendPasswordResetEmail(email, name, resetLink);
 

@@ -7,6 +7,7 @@ import Home from "./pages/Home";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import Profile from "./pages/Profile";
+import ResetPassword from "./pages/ResetPassword";
 import { useAuthStore } from "./store/useAuthStore";
 import { Toaster } from "react-hot-toast";
 import MainLayout from "./layouts/MainLayout";
@@ -52,6 +53,7 @@ function App() {
         <Route element={<PublicRoute />}>
           <Route path="/sign-up" element={<SignUp />} />
           <Route path="/sign-in" element={<SignIn />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
         </Route>
 
         <Route element={<ProtectedRoute />}>

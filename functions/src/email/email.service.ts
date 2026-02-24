@@ -30,8 +30,8 @@ export class EmailService {
       subject: 'Verify your email address',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #1da1f2;">Welcome to Twitter Clone, ${name}! 👋</h2>
-          <p style="color: #555; font-size: 16px;">
+          <h2>Welcome to Twitter Clone, ${name}! 👋</h2>
+          <p style="font-size: 16px;">
             Thanks for signing up! Please verify your email address by clicking the button below.
           </p>
           <a
@@ -50,11 +50,11 @@ export class EmailService {
           >
             Verify Email
           </a>
-          <p style="color: #999; font-size: 13px;">
+          <p style="font-size: 13px;">
             If you didn't create this account, you can safely ignore this email.
           </p>
           <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
-          <p style="color: #bbb; font-size: 12px;">
+          <p style="font-size: 12px;">
             Or copy this link into your browser:<br/>
             <a href="${verifyLink}" style="color: #1da1f2;">${verifyLink}</a>
           </p>
@@ -78,8 +78,8 @@ export class EmailService {
       subject: 'Reset your password',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #1da1f2;">Password Reset Request 🔐</h2>
-          <p style="color: #555; font-size: 16px;">
+          <h2>Password Reset Request 🔐</h2>
+          <p style="font-size: 16px;">
             Hi ${name}, we received a request to reset the password for your account (<strong>${email}</strong>).
           </p>
           <a
@@ -98,11 +98,11 @@ export class EmailService {
           >
             Reset Password
           </a>
-          <p style="color: #999; font-size: 13px;">
+          <p style="font-size: 13px;">
             This link will expire in 1 hour. If you didn't request a password reset, you can safely ignore this email.
           </p>
           <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
-          <p style="color: #bbb; font-size: 12px;">
+          <p style="font-size: 12px;">
             Or copy this link into your browser:<br/>
             <a href="${resetLink}" style="color: #1da1f2;">${resetLink}</a>
           </p>
