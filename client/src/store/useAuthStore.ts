@@ -6,7 +6,6 @@ import type { AuthResponse, SignUpResponse } from "@/types/auth";
 import {
   EmailAuthProvider,
   reauthenticateWithCredential,
-  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
   updatePassword,
@@ -61,6 +60,7 @@ export const useAuthStore = create<AuthState>((set) => ({
           name: userCredential.user.displayName?.split(" ")[0] || "",
           surname: userCredential.user.displayName?.split(" ")[1] || "",
           photo: userCredential.user.photoURL as string | undefined,
+          emailVerified: false,
         },
         isLoading: false,
       });
@@ -97,6 +97,8 @@ export const useAuthStore = create<AuthState>((set) => ({
           name: data.user.name || "",
           surname: data.user.surname || "",
           photo: data.user.photo || userCredential.user.photoURL || undefined,
+          emailVerified:
+            data.user.emailVerified ?? userCredential.user.emailVerified,
         },
         isLoading: false,
       });
@@ -138,6 +140,7 @@ export const useAuthStore = create<AuthState>((set) => ({
           name: data.user.name,
           surname: data.user.surname,
           photo: data.user.photo,
+          emailVerified: true,
         },
         isLoading: false,
       });
@@ -217,11 +220,16 @@ export const useAuthStore = create<AuthState>((set) => ({
   resetPassword: async (email: string) => {
     set({ isLoading: true, error: null });
     try {
-      await sendPasswordResetEmail(auth, email);
+      await api.post("/auth/forgot-password", { email });
       set({ isLoading: false });
     } catch (e) {
       const error = e as AppError;
-      set({ isLoading: false, error: error.message });
+      const message =
+        error.response?.data?.message || "Failed to send reset email";
+      set({
+        isLoading: false,
+        error: Array.isArray(message) ? message[0] : message,
+      });
       throw error;
     }
   },

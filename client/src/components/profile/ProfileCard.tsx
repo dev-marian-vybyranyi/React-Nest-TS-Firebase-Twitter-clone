@@ -9,7 +9,7 @@ import {
 import ConfirmationDialog from "@/components/ui/confirmation-dialog";
 import { auth } from "@/firebase";
 import type { User as UserType } from "@/types/user";
-import { LogOut, User } from "lucide-react";
+import { CheckCircle, LogOut, User, AlertCircle } from "lucide-react";
 import { useState } from "react";
 import ChangePasswordDialog from "../auth/ChangePasswordDialog";
 import DeleteProfileDialog from "./DeleteProfileDialog";
@@ -43,6 +43,17 @@ const ProfileCard = ({ user, onSignOut, isLoading }: ProfileCardProps) => {
           {user.name} {user.surname}
         </CardTitle>
         <CardDescription className="text-sm">{user.email}</CardDescription>
+        {user.emailVerified ? (
+          <div className="flex items-center gap-1 text-xs text-green-600 font-medium mt-1">
+            <CheckCircle className="h-3.5 w-3.5" />
+            Email verified
+          </div>
+        ) : (
+          <div className="flex items-center gap-1 text-xs text-yellow-600 font-medium mt-1">
+            <AlertCircle className="h-3.5 w-3.5" />
+            Email not verified
+          </div>
+        )}
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         {onSignOut && (

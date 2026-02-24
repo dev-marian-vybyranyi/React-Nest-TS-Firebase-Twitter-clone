@@ -5,9 +5,10 @@ import { PostModule } from '../post/post.module';
 import { ReactionModule } from '../reaction/reaction.module';
 import { UserModule } from '../user/user.module';
 import { CommentModule } from '../comment/comment.module';
+import { EmailModule } from '../email/email.module';
 
 @Module({
-  imports: [PostModule, ReactionModule, UserModule, CommentModule],
+  imports: [PostModule, ReactionModule, UserModule, CommentModule, EmailModule],
   controllers: [AuthController],
   providers: [AuthService],
 })

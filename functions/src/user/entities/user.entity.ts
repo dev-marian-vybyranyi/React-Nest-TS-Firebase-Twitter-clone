@@ -4,5 +4,6 @@ export class User {
   name?: string;
   surname?: string;
   photo?: string;
+  emailVerified?: boolean;
   createdAt: Date;
 }

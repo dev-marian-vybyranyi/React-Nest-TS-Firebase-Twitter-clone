@@ -31,6 +31,11 @@ export class AuthController {
     return this.authService.signIn(signInDto);
   }
 
+  @Post('forgot-password')
+  forgotPassword(@Body() body: { email: string }) {
+    return this.authService.forgotPassword(body.email);
+  }
+
   @UseGuards(AuthGuard)
   @Delete('delete')
   deleteAccount(@Req() req: RequestWithUser) {

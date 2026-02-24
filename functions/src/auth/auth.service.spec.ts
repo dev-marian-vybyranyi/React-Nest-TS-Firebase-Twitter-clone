@@ -4,6 +4,7 @@ import { PostService } from '../post/post.service';
 import { CommentService } from '../comment/comment.service';
 import { ReactionRepository } from '../reaction/repositories/reaction.repository';
 import { UserRepository } from '../user/repositories/user.repository';
+import { EmailService } from '../email/email.service';
 import { User } from '../user/entities/user.entity';
 import { BadRequestException } from '@nestjs/common';
 import * as admin from 'firebase-admin';
@@ -25,10 +26,15 @@ describe('AuthService', () => {
       create: jest.fn(),
       findOne: jest.fn(),
       delete: jest.fn(),
+      updateUser: jest.fn(),
     };
     const mockPostService = { deleteAllPostsByUserId: jest.fn() };
     const mockCommentService = { deleteByUserId: jest.fn() };
     const mockReactionRepository = { deleteByUserId: jest.fn() };
+    const mockEmailService = {
+      sendVerificationEmail: jest.fn().mockResolvedValue(undefined),
+      sendPasswordResetEmail: jest.fn().mockResolvedValue(undefined),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -37,6 +43,7 @@ describe('AuthService', () => {
         { provide: PostService, useValue: mockPostService },
         { provide: CommentService, useValue: mockCommentService },
         { provide: ReactionRepository, useValue: mockReactionRepository },
+        { provide: EmailService, useValue: mockEmailService },
       ],
     }).compile();
 
@@ -51,6 +58,9 @@ describe('AuthService', () => {
         createUser: jest
           .fn()
           .mockResolvedValue({ uid: 'test-uid', email: 'test@test.com' }),
+        generateEmailVerificationLink: jest
+          .fn()
+          .mockResolvedValue('https://verify-link.com'),
       });
       userRepository.create.mockResolvedValue(undefined);
 

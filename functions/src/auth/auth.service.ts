@@ -14,6 +14,7 @@ import { GoogleLoginDto } from './dto/google-login.dto';
 import { SignInDto } from './dto/signIn.dto';
 import { Auth } from './entities/auth.entity';
 import { User } from '../user/entities/user.entity';
+import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class AuthService {
@@ -24,6 +25,7 @@ export class AuthService {
     private readonly reactionRepository: ReactionRepository,
     private readonly userRepository: UserRepository,
     private readonly commentService: CommentService,
+    private readonly emailService: EmailService,
   ) {}
   async signup(createAuthDto: CreateAuthDto) {
     const { email, password, name, surname, photo } = createAuthDto;
@@ -42,8 +44,21 @@ export class AuthService {
         name,
         surname,
         photo: photo || null,
+        emailVerified: false,
         createdAt: new Date(),
       } as User);
+
+      try {
+        const verifyLink = await admin
+          .auth()
+          .generateEmailVerificationLink(email);
+        await this.emailService.sendVerificationEmail(email, name, verifyLink);
+      } catch (emailError) {
+        this.logger.warn(
+          `Failed to send verification email to ${email}`,
+          (emailError as Error).message,
+        );
+      }
 
       return {
         uid: userRecord.uid,
@@ -86,10 +101,13 @@ export class AuthService {
           name,
           surname,
           photo: photo || null,
+          emailVerified: true,
           createdAt: new Date(),
         } as User);
         console.log(`Created new user profile for ${email}`);
       } else {
+        // Ensure existing Google users are marked as verified
+        await this.userRepository.updateUser(uid, { emailVerified: true });
         console.log(`User ${email} already exists. Logging in...`);
       }
 
@@ -120,6 +138,7 @@ export class AuthService {
       const { email, uid } = decodedToken;
       const googleName = String(decodedToken.name || '');
       const photo = String(decodedToken.picture || '');
+      const emailVerified = decodedToken.email_verified ?? false;
 
       const user = await this.userRepository.findOne(uid);
 
@@ -138,12 +157,17 @@ export class AuthService {
           name,
           surname,
           photo: photo || null,
+          emailVerified,
           createdAt: new Date(),
         } as User;
 
         await this.userRepository.create(userData);
       } else {
         userData = user;
+        if (emailVerified && !user.emailVerified) {
+          await this.userRepository.updateUser(uid, { emailVerified: true });
+          userData = { ...user, emailVerified: true };
+        }
       }
 
       return {
@@ -154,10 +178,38 @@ export class AuthService {
           name: userData?.name,
           surname: userData?.surname,
           photo: userData?.photo,
+          emailVerified: userData?.emailVerified ?? emailVerified,
         } as Auth,
       };
     } catch {
       throw new BadRequestException('Invalid token');
+    }
+  }
+
+  async forgotPassword(email: string) {
+    try {
+      const resetLink = await admin.auth().generatePasswordResetLink(email);
+
+      let name = 'User';
+      try {
+        const userRecord = await admin.auth().getUserByEmail(email);
+        const displayName = userRecord.displayName || '';
+        name = displayName.split(' ')[0] || 'User';
+      } catch {
+      }
+
+      await this.emailService.sendPasswordResetEmail(email, name, resetLink);
+
+      return { message: 'Password reset email sent' };
+    } catch (e) {
+      const error = e as Error & { code?: string };
+      if (error.code === 'auth/user-not-found') {
+        throw new BadRequestException('No account found with this email');
+      }
+      this.logger.error('Error sending password reset email', error.stack);
+      throw new InternalServerErrorException(
+        'Failed to send password reset email',
+      );
     }
   }
 
