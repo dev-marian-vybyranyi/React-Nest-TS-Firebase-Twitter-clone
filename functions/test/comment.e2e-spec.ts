@@ -62,14 +62,16 @@ describe('Comment', () => {
   });
 
   it('should fetch comments for a post', async () => {
-    const response = await request(app.getHttpServer()).get('/comment/post1');
+    const response = await request(app.getHttpServer()).get(
+      '/posts/post1/comments',
+    );
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty('docs');
   });
 
   it('should block creating a comment without authentication', async () => {
     const response = await request(app.getHttpServer())
-      .post('/comment')
+      .post('/posts/post1/comments')
       .send({ postId: 'post1', content: 'Unauth comment' });
 
     expect(response.status).toBe(401);
@@ -77,7 +79,7 @@ describe('Comment', () => {
 
   it('should allow an authenticated user to create a comment', async () => {
     const response = await request(app.getHttpServer())
-      .post('/comment')
+      .post('/posts/post1/comments')
       .set('Authorization', 'Bearer fake-token')
       .send({
         postId: 'post1',

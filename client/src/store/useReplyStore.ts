@@ -42,7 +42,7 @@ export const useReplyStore = create<ReplyState>((set) => ({
     }));
     try {
       const response = await api.get<{ docs: Comment[] }>(
-        `/comment/${commentId}/replies?limit=10`,
+        `/comments/${commentId}/replies?limit=10`,
       );
       set((state) => ({
         replies: { ...state.replies, [commentId]: response.data.docs },
@@ -73,7 +73,7 @@ export const useReplyStore = create<ReplyState>((set) => ({
       errors: { ...state.errors, [commentId]: null },
     }));
     try {
-      const response = await api.post<Comment>("/comment", {
+      const response = await api.post<Comment>(`/posts/${postId}/comments`, {
         postId,
         authorId,
         authorUsername,
@@ -110,7 +110,7 @@ export const useReplyStore = create<ReplyState>((set) => ({
       errors: { ...state.errors, [commentId]: null },
     }));
     try {
-      await api.delete(`/comment/${replyId}`, {
+      await api.delete(`/comments/${replyId}`, {
         data: { requesterId },
       });
 
@@ -142,7 +142,7 @@ export const useReplyStore = create<ReplyState>((set) => ({
       errors: { ...state.errors, [commentId]: null },
     }));
     try {
-      await api.patch(`/comment/${replyId}`, {
+      await api.patch(`/comments/${replyId}`, {
         requesterId,
         content,
       });

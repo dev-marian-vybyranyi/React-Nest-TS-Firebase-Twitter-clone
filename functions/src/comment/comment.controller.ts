@@ -14,11 +14,11 @@ import { UpdateCommentDto } from './dto/update-comment.dto';
 import { CommentService } from './comment.service';
 import { AuthGuard } from '../common/guards/auth.guard';
 
-@Controller('comment')
+@Controller()
 export class CommentController {
   constructor(private readonly commentService: CommentService) {}
 
-  @Get(':postId')
+  @Get('posts/:postId/comments')
   async findAll(
     @Param('postId') postId: string,
     @Query('limit') limit: number = 10,
@@ -27,7 +27,7 @@ export class CommentController {
     return this.commentService.findAll(postId, +limit, cursor);
   }
 
-  @Get(':id/replies')
+  @Get('comments/:id/replies')
   async findReplies(
     @Param('id') id: string,
     @Query('limit') limit: number = 5,
@@ -36,11 +36,14 @@ export class CommentController {
     return this.commentService.findReplies(id, +limit, cursor);
   }
 
-  @Post()
+  @Post('posts/:postId/comments')
   @UseGuards(AuthGuard)
-  async create(@Body() createCommentDto: CreateCommentDto) {
+  async create(
+    @Param('postId') postId: string,
+    @Body() createCommentDto: CreateCommentDto,
+  ) {
     return this.commentService.create(
-      createCommentDto.postId,
+      postId,
       createCommentDto.authorId,
       createCommentDto.authorUsername,
       createCommentDto.authorPhotoURL || null,
@@ -49,7 +52,7 @@ export class CommentController {
     );
   }
 
-  @Patch(':id')
+  @Patch('comments/:id')
   async update(
     @Param('id') id: string,
     @Body() updateCommentDto: UpdateCommentDto,
@@ -61,7 +64,7 @@ export class CommentController {
     );
   }
 
-  @Delete(':id')
+  @Delete('comments/:id')
   async remove(
     @Param('id') id: string,
     @Body('requesterId') requesterId: string,
