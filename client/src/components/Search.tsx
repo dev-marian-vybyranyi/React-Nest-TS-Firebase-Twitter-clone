@@ -75,27 +75,25 @@ const GlobalSearchContent = ({
   const { query } = useSearchBox();
 
   return (
-    <>
-      <div
-        className="relative"
-        onFocus={() => setIsOpen(true)}
-        onBlur={() => setTimeout(() => setIsOpen(false), 200)}
-      >
-        <SearchBox
-          classNames={{
-            root: "w-full",
-            form: "relative flex items-center",
-            input:
-              "w-full h-9 px-4 rounded-full border border-slate-200 bg-slate-100 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none",
-            submitIcon: "hidden",
-            resetIcon: "hidden",
-          }}
-          placeholder="Search posts..."
-        />
-      </div>
+    <div
+      className="relative w-full"
+      onFocus={() => setIsOpen(true)}
+      onBlur={() => setTimeout(() => setIsOpen(false), 200)}
+    >
+      <SearchBox
+        classNames={{
+          root: "w-full",
+          form: "relative flex items-center",
+          input:
+            "w-full h-9 px-4 rounded-full border border-slate-200 bg-slate-100 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none",
+          submitIcon: "hidden",
+          resetIcon: "hidden",
+        }}
+        placeholder="Search posts..."
+      />
 
       {isOpen && query.length > 0 && (
-        <div className="absolute top-full -right-4 sm:right-auto sm:left-0 mt-2 bg-white rounded-lg shadow-xl border border-slate-100 z-50 max-h-96 overflow-y-auto w-[300px] sm:w-[400px]">
+        <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-xl border border-slate-100 z-50 max-h-96 overflow-y-auto w-[300px] sm:w-[400px]">
           <Hits
             hitComponent={Hit}
             classNames={{
@@ -107,6 +105,6 @@ const GlobalSearchContent = ({
           />
         </div>
       )}
-    </>
+    </div>
   );
 };
