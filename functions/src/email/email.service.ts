@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
+import * as admin from 'firebase-admin';
 
 @Injectable()
 export class EmailService {
@@ -113,5 +114,33 @@ export class EmailService {
     });
 
     this.logger.log(`Password reset email sent to ${email}`);
+  }
+
+  async sendVerificationLink(email: string, name: string): Promise<void> {
+    const firebaseVerifyLink = await admin
+      .auth()
+      .generateEmailVerificationLink(email);
+
+    const verifyUrl = new URL(firebaseVerifyLink);
+    const oobCode = verifyUrl.searchParams.get('oobCode');
+    const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+    const verifyLink = `${clientUrl}/verify-email?oobCode=${oobCode}`;
+
+    await this.sendVerificationEmail(email, name, verifyLink);
+  }
+
+  async sendPasswordResetLink(email: string): Promise<void> {
+    const firebaseLink = await admin.auth().generatePasswordResetLink(email);
+
+    const url = new URL(firebaseLink);
+    const oobCode = url.searchParams.get('oobCode');
+    const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+    const resetLink = `${clientUrl}/reset-password?oobCode=${oobCode}`;
+
+    const userRecord = await admin.auth().getUserByEmail(email);
+    const displayName = userRecord.displayName || '';
+    const name = displayName.split(' ')[0] || 'User';
+
+    await this.sendPasswordResetEmail(email, name, resetLink);
   }
 }

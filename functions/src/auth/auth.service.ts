@@ -50,20 +50,11 @@ export class AuthService {
       } as User);
 
       try {
-        const firebaseVerifyLink = await admin
-          .auth()
-          .generateEmailVerificationLink(email);
-
-        const verifyUrl = new URL(firebaseVerifyLink);
-        const oobCode = verifyUrl.searchParams.get('oobCode');
-        const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
-        const verifyLink = `${clientUrl}/verify-email?oobCode=${oobCode}`;
-
-        await this.emailService.sendVerificationEmail(email, name, verifyLink);
-      } catch (emailError) {
+        await this.emailService.sendVerificationLink(email, name);
+      } catch (error) {
         this.logger.warn(
           `Failed to send verification email to ${email}`,
-          (emailError as Error).message,
+          (error as Error).message,
         );
       }
 
@@ -180,22 +171,7 @@ export class AuthService {
   }
 
   async forgotPassword(email: string) {
-    const firebaseLink = await admin.auth().generatePasswordResetLink(email);
-
-    const url = new URL(firebaseLink);
-    const oobCode = url.searchParams.get('oobCode');
-    const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
-    const resetLink = `${clientUrl}/reset-password?oobCode=${oobCode}`;
-
-    let name = 'User';
-    try {
-      const userRecord = await admin.auth().getUserByEmail(email);
-      const displayName = userRecord.displayName || '';
-      name = displayName.split(' ')[0] || 'User';
-    } catch {}
-
-    await this.emailService.sendPasswordResetEmail(email, name, resetLink);
-
+    await this.emailService.sendPasswordResetLink(email);
     return { message: 'Password reset email sent' };
   }
 

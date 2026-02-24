@@ -6,7 +6,7 @@ import { ReactionRepository } from '../reaction/repositories/reaction.repository
 import { UserRepository } from '../user/repositories/user.repository';
 import { EmailService } from '../email/email.service';
 import { User } from '../user/entities/user.entity';
-import { BadRequestException } from '@nestjs/common';
+import { ConflictException } from '@nestjs/common';
 import * as admin from 'firebase-admin';
 
 jest.mock('firebase-admin', () => ({
@@ -32,6 +32,8 @@ describe('AuthService', () => {
     const mockCommentService = { deleteByUserId: jest.fn() };
     const mockReactionRepository = { deleteByUserId: jest.fn() };
     const mockEmailService = {
+      sendVerificationLink: jest.fn().mockResolvedValue(undefined),
+      sendPasswordResetLink: jest.fn().mockResolvedValue(undefined),
       sendVerificationEmail: jest.fn().mockResolvedValue(undefined),
       sendPasswordResetEmail: jest.fn().mockResolvedValue(undefined),
     };
@@ -89,7 +91,7 @@ describe('AuthService', () => {
           name: 'Marian',
           surname: 'Kvit',
         }),
-      ).rejects.toThrow(BadRequestException);
+      ).rejects.toThrow(ConflictException);
     });
   });
 
