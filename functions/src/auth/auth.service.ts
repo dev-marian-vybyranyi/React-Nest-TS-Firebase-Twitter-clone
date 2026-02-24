@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -74,7 +75,7 @@ export class AuthService {
     } catch (e) {
       const error = e as Error & { code?: string };
       if (error.code === 'auth/email-already-exists') {
-        throw new BadRequestException('User with this email already exists');
+        throw new ConflictException('User with this email already exists');
       }
       throw e;
     }
@@ -191,8 +192,7 @@ export class AuthService {
       const userRecord = await admin.auth().getUserByEmail(email);
       const displayName = userRecord.displayName || '';
       name = displayName.split(' ')[0] || 'User';
-    } catch {
-    }
+    } catch {}
 
     await this.emailService.sendPasswordResetEmail(email, name, resetLink);
 
