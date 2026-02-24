@@ -13,15 +13,7 @@ export class StorageService {
   }
 
   async deleteFile(filePath: string): Promise<void> {
-    try {
-      await this.bucket.file(filePath).delete();
-    } catch (err) {
-      const error = err as Error;
-      this.logger.error(`Failed to delete file: ${filePath}`, error.stack);
-      throw new InternalServerErrorException(
-        'An unexpected error occurred while deleting the file',
-      );
-    }
+    await this.bucket.file(filePath).delete();
   }
 
   extractFilePathFromUrl(url: string): string | null {

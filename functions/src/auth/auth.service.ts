@@ -76,66 +76,52 @@ export class AuthService {
       if (error.code === 'auth/email-already-exists') {
         throw new BadRequestException('User with this email already exists');
       }
-      this.logger.error('Error during signup', error.stack);
-      throw new InternalServerErrorException(
-        'An unexpected error occurred during signup',
-      );
+      throw e;
     }
   }
 
   async googleLogin(googleLoginDto: GoogleLoginDto) {
-    try {
-      const decodedToken = await admin
-        .auth()
-        .verifyIdToken(googleLoginDto.token);
-      const { email, uid } = decodedToken;
-      const googleName = String(decodedToken.name || '');
-      const photo = String(decodedToken.picture || '');
+    const decodedToken = await admin.auth().verifyIdToken(googleLoginDto.token);
+    const { email, uid } = decodedToken;
+    const googleName = String(decodedToken.name || '');
+    const photo = String(decodedToken.picture || '');
 
-      const name = googleName ? googleName.split(' ')[0] : '';
-      const surname =
-        googleName && googleName.split(' ').length > 1
-          ? googleName.split(' ')[1]
-          : '';
+    const name = googleName ? googleName.split(' ')[0] : '';
+    const surname =
+      googleName && googleName.split(' ').length > 1
+        ? googleName.split(' ')[1]
+        : '';
 
-      const user = await this.userRepository.findOne(uid);
+    const user = await this.userRepository.findOne(uid);
 
-      if (!user) {
-        await this.userRepository.create({
-          id: uid,
-          email,
-          name,
-          surname,
-          photo: photo || null,
-          emailVerified: true,
-          createdAt: new Date(),
-        } as User);
-        console.log(`Created new user profile for ${email}`);
-      } else {
-        // Ensure existing Google users are marked as verified
-        await this.userRepository.updateUser(uid, { emailVerified: true });
-        console.log(`User ${email} already exists. Logging in...`);
-      }
-
-      const userData = user || { name, surname, photo };
-
-      return {
-        message: 'Google auth successful',
-        user: {
-          email,
-          uid,
-          name: userData?.name,
-          surname: userData?.surname,
-          photo: userData?.photo,
-        } as Auth,
-      };
-    } catch (e) {
-      const error = e as Error;
-      this.logger.error('Error during Google login', error.stack);
-      throw new InternalServerErrorException(
-        'An unexpected error occurred during Google login',
-      );
+    if (!user) {
+      await this.userRepository.create({
+        id: uid,
+        email,
+        name,
+        surname,
+        photo: photo || null,
+        emailVerified: true,
+        createdAt: new Date(),
+      } as User);
+      console.log(`Created new user profile for ${email}`);
+    } else {
+      await this.userRepository.updateUser(uid, { emailVerified: true });
+      console.log(`User ${email} already exists. Logging in...`);
     }
+
+    const userData = user || { name, surname, photo };
+
+    return {
+      message: 'Google auth successful',
+      user: {
+        email,
+        uid,
+        name: userData?.name,
+        surname: userData?.surname,
+        photo: userData?.photo,
+      } as Auth,
+    };
   }
 
   async signIn(signInDto: SignInDto) {
@@ -193,65 +179,49 @@ export class AuthService {
   }
 
   async forgotPassword(email: string) {
+    const firebaseLink = await admin.auth().generatePasswordResetLink(email);
+
+    const url = new URL(firebaseLink);
+    const oobCode = url.searchParams.get('oobCode');
+    const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+    const resetLink = `${clientUrl}/reset-password?oobCode=${oobCode}`;
+
+    let name = 'User';
     try {
-      const firebaseLink = await admin.auth().generatePasswordResetLink(email);
-
-      const url = new URL(firebaseLink);
-      const oobCode = url.searchParams.get('oobCode');
-      const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
-      const resetLink = `${clientUrl}/reset-password?oobCode=${oobCode}`;
-
-      let name = 'User';
-      try {
-        const userRecord = await admin.auth().getUserByEmail(email);
-        const displayName = userRecord.displayName || '';
-        name = displayName.split(' ')[0] || 'User';
-      } catch {}
-
-      await this.emailService.sendPasswordResetEmail(email, name, resetLink);
-
-      return { message: 'Password reset email sent' };
-    } catch (e) {
-      const error = e as Error & { code?: string };
-      if (error.code === 'auth/user-not-found') {
-        throw new BadRequestException('No account found with this email');
-      }
-      this.logger.error('Error sending password reset email', error.stack);
-      throw new InternalServerErrorException(
-        'Failed to send password reset email',
-      );
+      const userRecord = await admin.auth().getUserByEmail(email);
+      const displayName = userRecord.displayName || '';
+      name = displayName.split(' ')[0] || 'User';
+    } catch {
     }
+
+    await this.emailService.sendPasswordResetEmail(email, name, resetLink);
+
+    return { message: 'Password reset email sent' };
   }
 
   async deleteUser(uid: string) {
-    try {
-      const userData = await this.userRepository.findOne(uid);
+    const userData = await this.userRepository.findOne(uid);
 
-      if (userData?.photo) {
-        try {
-          const match = userData.photo.match(/\/o\/([^?]+)/);
-          if (match) {
-            const filePath = decodeURIComponent(match[1]);
-            await admin.storage().bucket().file(filePath).delete();
-            console.log(`Deleted user profile photo: ${filePath}`);
-          }
-        } catch (error) {
-          console.error('Error deleting user profile photo:', error);
+    if (userData?.photo) {
+      try {
+        const match = userData.photo.match(/\/o\/([^?]+)/);
+        if (match) {
+          const filePath = decodeURIComponent(match[1]);
+          await admin.storage().bucket().file(filePath).delete();
+          console.log(`Deleted user profile photo: ${filePath}`);
         }
+      } catch (error) {
+        console.error('Error deleting user profile photo:', error);
       }
-
-      await this.postService.deleteAllPostsByUserId(uid);
-      await this.commentService.deleteByUserId(uid);
-
-      await this.userRepository.delete(uid);
-      await this.reactionRepository.deleteByUserId(uid);
-      await admin.auth().deleteUser(uid);
-
-      return { message: 'User deleted successfully' };
-    } catch {
-      throw new InternalServerErrorException(
-        'An unexpected error occurred while deleting user account',
-      );
     }
+
+    await this.postService.deleteAllPostsByUserId(uid);
+    await this.commentService.deleteByUserId(uid);
+
+    await this.userRepository.delete(uid);
+    await this.reactionRepository.deleteByUserId(uid);
+    await admin.auth().deleteUser(uid);
+
+    return { message: 'User deleted successfully' };
   }
 }

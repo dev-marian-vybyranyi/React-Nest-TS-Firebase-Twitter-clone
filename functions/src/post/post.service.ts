@@ -31,39 +31,31 @@ export class PostService {
   ) {}
 
   async create(createPostDto: CreatePostDto, userId: string): Promise<Post> {
-    try {
-      const userData = await this.userRepository.findOne(userId);
+    const userData = await this.userRepository.findOne(userId);
 
-      const user = userData
-        ? {
-            name: userData.name || '',
-            surname: userData.surname || '',
-            photo: userData.photo,
-          }
-        : undefined;
+    const user = userData
+      ? {
+          name: userData.name || '',
+          surname: userData.surname || '',
+          photo: userData.photo,
+        }
+      : undefined;
 
-      const now = new Date();
-      const postData = {
-        ...createPostDto,
-        userId,
-        user,
-        createdAt: now,
-        updatedAt: now,
-        likesCount: 0,
-        dislikesCount: 0,
-        commentsCount: 0,
-      };
+    const now = new Date();
+    const postData = {
+      ...createPostDto,
+      userId,
+      user,
+      createdAt: now,
+      updatedAt: now,
+      likesCount: 0,
+      dislikesCount: 0,
+      commentsCount: 0,
+    };
 
-      const newPostData = await this.postRepository.create(postData);
+    const newPostData = await this.postRepository.create(postData);
 
-      return newPostData;
-    } catch (e) {
-      const error = e as Error;
-      this.logger.error('Error creating post', error.stack);
-      throw new InternalServerErrorException(
-        'An unexpected error occurred while creating the post',
-      );
-    }
+    return newPostData;
   }
 
   async findAll(
@@ -72,81 +64,62 @@ export class PostService {
     currentUserId?: string,
     sortBy?: sortOptions,
   ): Promise<{ posts: any[]; lastDocId: string | null; hasMore: boolean }> {
-    try {
-      const { docs } = await this.postRepository.findAll(
-        limit,
-        lastDocId,
-        sortBy,
-      );
+    const { docs } = await this.postRepository.findAll(
+      limit,
+      lastDocId,
+      sortBy,
+    );
 
-      const hasMore = docs.length > limit;
-      const posts = docs.slice(0, limit);
-      const postIds = posts.map((post) => post.id);
+    const hasMore = docs.length > limit;
+    const posts = docs.slice(0, limit);
+    const postIds = posts.map((post) => post.id);
 
-      let userReactions: any[] = [];
-      if (currentUserId && postIds.length > 0) {
-        userReactions = await this.reactionRepository.findByUserAndPostIds(
-          currentUserId,
-          postIds,
-        );
-      }
-
-      const postsWithStats = posts.map((post) => {
-        const reaction = userReactions.find((r) => r.postId === post.id);
-        return {
-          ...post,
-          likes: post.likesCount || 0,
-          dislikes: post.dislikesCount || 0,
-          userReaction: reaction ? reaction.type : null,
-        };
-      });
-
-      const lastDocIdResult =
-        posts.length > 0 ? posts[posts.length - 1].id : null;
-
-      return { posts: postsWithStats, lastDocId: lastDocIdResult, hasMore };
-    } catch (e) {
-      const error = e as Error;
-      this.logger.error('Error fetching posts', error.stack);
-      throw new InternalServerErrorException(
-        'An unexpected error occurred while fetching posts',
+    let userReactions: any[] = [];
+    if (currentUserId && postIds.length > 0) {
+      userReactions = await this.reactionRepository.findByUserAndPostIds(
+        currentUserId,
+        postIds,
       );
     }
-  }
 
-  async findOne(id: string, currentUserId?: string): Promise<any> {
-    try {
-      const post = await this.postRepository.findOne(id);
-
-      if (!post) {
-        throw new NotFoundException('Post not found');
-      }
-
-      let userReaction: ReactionType | null = null;
-      if (currentUserId) {
-        const reaction = await this.reactionRepository.findOne(
-          currentUserId,
-          post.id,
-        );
-        userReaction = reaction ? reaction.type : null;
-      }
-
+    const postsWithStats = posts.map((post) => {
+      const reaction = userReactions.find((r) => r.postId === post.id);
       return {
         ...post,
         likes: post.likesCount || 0,
         dislikes: post.dislikesCount || 0,
-        userReaction,
+        userReaction: reaction ? reaction.type : null,
       };
-    } catch (e) {
-      const error = e as Error;
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-      this.logger.error(`Error fetching post with id ${id}`, error.stack);
-      throw new InternalServerErrorException(
-        'An unexpected error occurred while fetching the post',
-      );
+    });
+
+    const lastDocIdResult =
+      posts.length > 0 ? posts[posts.length - 1].id : null;
+
+    return { posts: postsWithStats, lastDocId: lastDocIdResult, hasMore };
+  }
+
+  async findOne(id: string, currentUserId?: string): Promise<any> {
+    const post = await this.postRepository.findOne(id);
+
+    if (!post) {
+      throw new NotFoundException('Post not found');
     }
+
+    let userReaction: ReactionType | null = null;
+    if (currentUserId) {
+      const reaction = await this.reactionRepository.findOne(
+        currentUserId,
+        post.id,
+      );
+      userReaction = reaction ? reaction.type : null;
+    }
+
+    return {
+      ...post,
+      likes: post.likesCount || 0,
+      dislikes: post.dislikesCount || 0,
+      userReaction,
+    };
   }
 
   async findByUserId(
@@ -156,47 +129,39 @@ export class PostService {
     currentUserId?: string,
     sortBy?: sortOptions,
   ): Promise<{ posts: any[]; lastDocId: string | null; hasMore: boolean }> {
-    try {
-      const { docs } = await this.postRepository.findByUserId(
-        userId,
-        limit,
-        lastDocId,
-        sortBy,
-      );
+    const { docs } = await this.postRepository.findByUserId(
+      userId,
+      limit,
+      lastDocId,
+      sortBy,
+    );
 
-      const hasMore = docs.length > limit;
-      const posts = docs.slice(0, limit);
-      const postIds = posts.map((post) => post.id);
+    const hasMore = docs.length > limit;
+    const posts = docs.slice(0, limit);
+    const postIds = posts.map((post) => post.id);
 
-      let userReactions: any[] = [];
-      if (currentUserId && postIds.length > 0) {
-        userReactions = await this.reactionRepository.findByUserAndPostIds(
-          currentUserId,
-          postIds,
-        );
-      }
-
-      const postsWithStats = posts.map((post) => {
-        const reaction = userReactions.find((r) => r.postId === post.id);
-        return {
-          ...post,
-          likes: post.likesCount || 0,
-          dislikes: post.dislikesCount || 0,
-          userReaction: reaction ? reaction.type : null,
-        };
-      });
-
-      const lastDocIdResult =
-        posts.length > 0 ? posts[posts.length - 1].id : null;
-
-      return { posts: postsWithStats, lastDocId: lastDocIdResult, hasMore };
-    } catch (e) {
-      const error = e as Error;
-      this.logger.error(`Error fetching posts for user ${userId}`, error.stack);
-      throw new InternalServerErrorException(
-        'An unexpected error occurred while fetching user posts',
+    let userReactions: any[] = [];
+    if (currentUserId && postIds.length > 0) {
+      userReactions = await this.reactionRepository.findByUserAndPostIds(
+        currentUserId,
+        postIds,
       );
     }
+
+    const postsWithStats = posts.map((post) => {
+      const reaction = userReactions.find((r) => r.postId === post.id);
+      return {
+        ...post,
+        likes: post.likesCount || 0,
+        dislikes: post.dislikesCount || 0,
+        userReaction: reaction ? reaction.type : null,
+      };
+    });
+
+    const lastDocIdResult =
+      posts.length > 0 ? posts[posts.length - 1].id : null;
+
+    return { posts: postsWithStats, lastDocId: lastDocIdResult, hasMore };
   }
 
   async update(
@@ -204,108 +169,66 @@ export class PostService {
     updatePostDto: UpdatePostDto,
     userId: string,
   ): Promise<Post> {
-    try {
-      const post = await this.postRepository.findOne(id);
+    const post = await this.postRepository.findOne(id);
 
-      if (!post) {
-        throw new NotFoundException('Post not found');
-      }
-
-      if (post.userId !== userId) {
-        throw new ForbiddenException('You can only update your own posts');
-      }
-
-      const updateData = {
-        ...updatePostDto,
-        updatedAt: new Date(),
-      };
-
-      if (
-        post.photo &&
-        updatePostDto.photo !== undefined &&
-        post.photo !== updatePostDto.photo
-      ) {
-        this.eventEmitter.emit(
-          'post.updated',
-          new PostUpdatedEvent(post.photo),
-        );
-      }
-
-      await this.postRepository.update(id, updateData);
-      const updatedPost = await this.postRepository.findOne(id);
-
-      if (!updatedPost) {
-        throw new InternalServerErrorException(
-          'Failed to retrieve updated post',
-        );
-      }
-
-      return updatedPost;
-    } catch (e) {
-      const error = e as Error;
-      if (
-        error instanceof NotFoundException ||
-        error instanceof ForbiddenException
-      ) {
-        throw error;
-      }
-      this.logger.error(`Error updating post with id ${id}`, error.stack);
-      throw new InternalServerErrorException(
-        'An unexpected error occurred while updating the post',
-      );
+    if (!post) {
+      throw new NotFoundException('Post not found');
     }
+
+    if (post.userId !== userId) {
+      throw new ForbiddenException('You can only update your own posts');
+    }
+
+    const updateData = {
+      ...updatePostDto,
+      updatedAt: new Date(),
+    };
+
+    if (
+      post.photo &&
+      updatePostDto.photo !== undefined &&
+      post.photo !== updatePostDto.photo
+    ) {
+      this.eventEmitter.emit('post.updated', new PostUpdatedEvent(post.photo));
+    }
+
+    await this.postRepository.update(id, updateData);
+    const updatedPost = await this.postRepository.findOne(id);
+
+    if (!updatedPost) {
+      throw new InternalServerErrorException('Failed to retrieve updated post');
+    }
+
+    return updatedPost;
   }
 
   async remove(id: string, userId: string) {
-    try {
-      const post = await this.postRepository.findOne(id);
+    const post = await this.postRepository.findOne(id);
 
-      if (!post) {
-        throw new NotFoundException('Post not found');
-      }
-
-      if (post.userId !== userId) {
-        throw new ForbiddenException('You can only delete your own posts');
-      }
-
-      if (post.photo) {
-        this.eventEmitter.emit(
-          'post.deleted',
-          new PostDeletedEvent(post.photo),
-        );
-      }
-
-      await this.postRepository.delete(id);
-      await this.reactionRepository.deleteByPostId(id);
-      await this.commentRepository.deleteByPostId(id);
-
-      return { message: 'Post deleted successfully' };
-    } catch (e) {
-      const error = e as Error;
-      if (
-        error instanceof NotFoundException ||
-        error instanceof ForbiddenException
-      ) {
-        throw error;
-      }
-      this.logger.error(`Error deleting post with id ${id}`, error.stack);
-      throw new InternalServerErrorException(
-        'An unexpected error occurred while deleting the post',
-      );
+    if (!post) {
+      throw new NotFoundException('Post not found');
     }
+
+    if (post.userId !== userId) {
+      throw new ForbiddenException('You can only delete your own posts');
+    }
+
+    if (post.photo) {
+      this.eventEmitter.emit('post.deleted', new PostDeletedEvent(post.photo));
+    }
+
+    await this.postRepository.delete(id);
+    await this.reactionRepository.deleteByPostId(id);
+    await this.commentRepository.deleteByPostId(id);
+
+    return { message: 'Post deleted successfully' };
   }
 
   async updateUserInPosts(
     userId: string,
     userData: { name?: string; surname?: string; photo?: string },
   ): Promise<void> {
-    try {
-      await this.postRepository.updateUserInPosts(userId, userData);
-    } catch {
-      this.logger.error(
-        `Error updating user in posts for user with id ${userId}`,
-      );
-    }
+    await this.postRepository.updateUserInPosts(userId, userData);
   }
 
   async deleteAllPostsByUserId(userId: string): Promise<void> {

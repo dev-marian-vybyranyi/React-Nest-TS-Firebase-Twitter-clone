@@ -4,7 +4,9 @@ import { ExpressAdapter } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import express from 'express';
 import helmet from 'helmet';
+import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import * as functions from 'firebase-functions';
+
 import * as admin from 'firebase-admin';
 
 admin.initializeApp();
@@ -18,6 +20,7 @@ export const createNestServer = async (expressInstance: express.Express) => {
   );
 
   app.use(helmet());
+  app.useGlobalFilters(new GlobalExceptionFilter());
 
   app.useGlobalPipes(
     new ValidationPipe({

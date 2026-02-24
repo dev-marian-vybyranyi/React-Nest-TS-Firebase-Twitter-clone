@@ -21,62 +21,43 @@ export class UserService {
   ) {}
 
   async getUserById(id: string): Promise<User> {
-    try {
-      const user = await this.userRepository.findOne(id);
-      if (!user) {
-        throw new NotFoundException('User not found');
-      }
-      return user;
-    } catch (e) {
-      const error = e as Error;
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-      this.logger.error(`Failed to get user by id ${id}`, error.stack);
-      throw new InternalServerErrorException(
-        'An unexpected error occurred while fetching the user',
-      );
+    const user = await this.userRepository.findOne(id);
+    if (!user) {
+      throw new NotFoundException('User not found');
     }
+    return user;
   }
 
   async updateUser(
     id: string,
     updateUserDto: UpdateUserDto,
   ): Promise<{ message: string; user: Partial<User> }> {
-    try {
-      const updateData: Partial<User> = { ...updateUserDto };
+    const updateData: Partial<User> = { ...updateUserDto };
 
-      Object.keys(updateData).forEach(
-        (key) => updateData[key] === undefined && delete updateData[key],
-      );
+    Object.keys(updateData).forEach(
+      (key) => updateData[key] === undefined && delete updateData[key],
+    );
 
-      if (Object.keys(updateData).length > 0) {
-        await this.userRepository.updateUser(id, updateData);
-      }
-
-      if (updateUserDto.name || updateUserDto.surname || updateUserDto.photo) {
-        const fullUser = await this.userRepository.findOne(id);
-        if (fullUser) {
-          await this.postService.updateUserInPosts(id, {
-            name: fullUser.name,
-            surname: fullUser.surname,
-            photo: fullUser.photo,
-          });
-          await this.commentService.updateUserInComments(id, {
-            name: fullUser.name,
-            surname: fullUser.surname,
-            photo: fullUser.photo,
-          });
-        }
-      }
-
-      return { message: 'User updated successfully', user: updateData };
-    } catch (e) {
-      const error = e as Error;
-      this.logger.error(`Failed to update user with id ${id}`, error.stack);
-      throw new InternalServerErrorException(
-        'An unexpected error occurred while updating the user',
-      );
+    if (Object.keys(updateData).length > 0) {
+      await this.userRepository.updateUser(id, updateData);
     }
+
+    if (updateUserDto.name || updateUserDto.surname || updateUserDto.photo) {
+      const fullUser = await this.userRepository.findOne(id);
+      if (fullUser) {
+        await this.postService.updateUserInPosts(id, {
+          name: fullUser.name,
+          surname: fullUser.surname,
+          photo: fullUser.photo,
+        });
+        await this.commentService.updateUserInComments(id, {
+          name: fullUser.name,
+          surname: fullUser.surname,
+          photo: fullUser.photo,
+        });
+      }
+    }
+
+    return { message: 'User updated successfully', user: updateData };
   }
 }
