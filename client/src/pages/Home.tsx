@@ -1,7 +1,7 @@
 import PostList from "@/components/post/PostList";
 import { usePostStore } from "@/store/usePostStore";
 import { useEffect } from "react";
-import LoadingState from "@/components/LoadingState";
+import PostCardSkeleton from "@/components/post/PostCardSkeleton";
 import SortDropdown from "@/components/post/SortDropdown";
 
 const Home = () => {
@@ -12,7 +12,14 @@ const Home = () => {
   }, [fetchPosts]);
 
   if (loading && posts.length === 0) {
-    return <LoadingState />;
+    return (
+      <div className="max-w-2xl mx-auto space-y-6">
+        <SortDropdown />
+        {Array.from({ length: 3 }).map((_, i) => (
+          <PostCardSkeleton key={i} />
+        ))}
+      </div>
+    );
   }
 
   return (

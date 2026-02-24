@@ -3,6 +3,7 @@ import PostCard from "./PostCard";
 import EmptyPostsState from "./EmptyPostsState";
 import { useInView } from "react-intersection-observer";
 import { useEffect } from "react";
+import PostCardSkeleton from "./PostCardSkeleton";
 
 interface PostListProps {
   posts?: Post[];
@@ -38,9 +39,10 @@ const PostList = ({
       {hasMore && !isLoadingMore && <div ref={ref} className="h-10" />}
 
       {isLoadingMore && (
-        <div className="flex justify-center py-4">
-          <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full" />
-        </div>
+        <>
+          <PostCardSkeleton />
+          <PostCardSkeleton />
+        </>
       )}
 
       {!hasMore && posts.length > 0 && (
