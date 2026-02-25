@@ -29,8 +29,8 @@ const ReactionBar = ({
   useEffect(() => {
     if (!reaction) {
       setReaction(postId, {
-        likes: initialLikes,
-        dislikes: initialDislikes,
+        likesCount: initialLikes,
+        dislikesCount: initialDislikes,
         commentsCount: initialCommentsCount,
         userReaction: initialUserReaction,
       });
@@ -57,7 +57,7 @@ const ReactionBar = ({
         onClick={() => react(postId, "like")}
       >
         <ThumbsUp className={`h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
-        <span>{reaction?.likes ?? initialLikes}</span>
+        <span>{reaction?.likesCount ?? initialLikes}</span>
       </Button>
 
       <Button
@@ -67,7 +67,7 @@ const ReactionBar = ({
         onClick={() => react(postId, "dislike")}
       >
         <ThumbsDown className={`h-4 w-4 ${isDisliked ? "fill-current" : ""}`} />
-        <span>{reaction?.dislikes ?? initialDislikes}</span>
+        <span>{reaction?.dislikesCount ?? initialDislikes}</span>
       </Button>
 
       <Button

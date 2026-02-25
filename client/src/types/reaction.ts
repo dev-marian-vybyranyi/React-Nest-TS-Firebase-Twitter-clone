@@ -10,7 +10,7 @@ export interface Reaction {
 
 export interface PostReaction {
   userReaction: ReactionType;
-  likes: number;
-  dislikes: number;
+  likesCount: number;
+  dislikesCount: number;
   commentsCount?: number;
 }

@@ -77,8 +77,8 @@ const PostCard = ({ post }: PostCardProps) => {
 
       <ReactionBar
         postId={post.id}
-        initialLikes={post.likes}
-        initialDislikes={post.dislikes}
+        initialLikes={post.likesCount}
+        initialDislikes={post.dislikesCount}
         initialCommentsCount={post.commentsCount}
         initialUserReaction={post.userReaction}
         onCommentClick={() => setShowComments(!showComments)}

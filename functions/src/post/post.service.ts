@@ -87,8 +87,6 @@ export class PostService {
       const reaction = userReactions.find((r) => r.postId === post.id);
       return {
         ...post,
-        likes: post.likesCount || 0,
-        dislikes: post.dislikesCount || 0,
         userReaction: reaction ? reaction.type : null,
       };
     });
@@ -117,8 +115,6 @@ export class PostService {
 
     return {
       ...post,
-      likes: post.likesCount || 0,
-      dislikes: post.dislikesCount || 0,
       userReaction,
     };
   }
@@ -153,8 +149,6 @@ export class PostService {
       const reaction = userReactions.find((r) => r.postId === post.id);
       return {
         ...post,
-        likes: post.likesCount || 0,
-        dislikes: post.dislikesCount || 0,
         userReaction: reaction ? reaction.type : null,
       };
     });

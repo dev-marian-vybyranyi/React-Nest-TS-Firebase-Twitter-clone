@@ -19,8 +19,8 @@ export const useReactionStore = create<ReactionState>((set, get) => ({
     const current = get().reactions[postId];
     const isSame = current?.userReaction === type;
 
-    const likes = current?.likes ?? 0;
-    const dislikes = current?.dislikes ?? 0;
+    const likesCount = current?.likesCount ?? 0;
+    const dislikesCount = current?.dislikesCount ?? 0;
     const prev = current?.userReaction;
 
     let newReaction: PostReaction;
@@ -28,21 +28,25 @@ export const useReactionStore = create<ReactionState>((set, get) => ({
     if (isSame) {
       newReaction = {
         userReaction: null,
-        likes: type === "like" ? likes - 1 : likes,
-        dislikes: type === "dislike" ? dislikes - 1 : dislikes,
+        likesCount: type === "like" ? likesCount - 1 : likesCount,
+        dislikesCount: type === "dislike" ? dislikesCount - 1 : dislikesCount,
         commentsCount: current?.commentsCount,
       };
     } else {
       newReaction = {
         userReaction: type,
-        likes:
-          type === "like" ? likes + 1 : prev === "like" ? likes - 1 : likes,
-        dislikes:
+        likesCount:
+          type === "like"
+            ? likesCount + 1
+            : prev === "like"
+              ? likesCount - 1
+              : likesCount,
+        dislikesCount:
           type === "dislike"
-            ? dislikes + 1
+            ? dislikesCount + 1
             : prev === "dislike"
-              ? dislikes - 1
-              : dislikes,
+              ? dislikesCount - 1
+              : dislikesCount,
         commentsCount: current?.commentsCount,
       };
     }

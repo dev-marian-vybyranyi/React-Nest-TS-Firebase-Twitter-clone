@@ -11,8 +11,8 @@ export interface Post {
     surname: string;
     photo?: string;
   };
-  likes?: number;
-  dislikes?: number;
+  likesCount?: number;
+  dislikesCount?: number;
   commentsCount?: number;
   userReaction?: "like" | "dislike" | null;
 }
