@@ -12,7 +12,7 @@ import { ReactionRepository } from '../reaction/repositories/reaction.repository
 import { UserRepository } from '../user/repositories/user.repository';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
-import { Post } from './entities/post.entity';
+import { Post, PostWithStats } from './entities/post.entity';
 import { PostDeletedEvent } from './events/post-deleted.event';
 import { PostUpdatedEvent } from './events/post-updated.event';
 import { PostRepository, sortOptions } from './repositories/post.repository';
@@ -64,7 +64,11 @@ export class PostService {
     lastDocId?: string,
     currentUserId?: string,
     sortBy?: sortOptions,
-  ): Promise<{ posts: any[]; lastDocId: string | null; hasMore: boolean }> {
+  ): Promise<{
+    posts: PostWithStats[];
+    lastDocId: string | null;
+    hasMore: boolean;
+  }> {
     const { docs } = await this.postRepository.findAll(
       limit,
       lastDocId,
@@ -97,7 +101,7 @@ export class PostService {
     return { posts: postsWithStats, lastDocId: lastDocIdResult, hasMore };
   }
 
-  async findOne(id: string, currentUserId?: string): Promise<any> {
+  async findOne(id: string, currentUserId?: string): Promise<PostWithStats> {
     const post = await this.postRepository.findOne(id);
 
     if (!post) {
@@ -125,7 +129,11 @@ export class PostService {
     lastDocId?: string,
     currentUserId?: string,
     sortBy?: sortOptions,
-  ): Promise<{ posts: any[]; lastDocId: string | null; hasMore: boolean }> {
+  ): Promise<{
+    posts: PostWithStats[];
+    lastDocId: string | null;
+    hasMore: boolean;
+  }> {
     const { docs } = await this.postRepository.findByUserId(
       userId,
       limit,

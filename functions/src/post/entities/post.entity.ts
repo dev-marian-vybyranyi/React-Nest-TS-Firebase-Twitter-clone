@@ -1,3 +1,5 @@
+import { ReactionType } from '../../reaction/entities/reaction.entity';
+
 export class Post {
   id: string;
   title: string;
@@ -15,3 +17,7 @@ export class Post {
   dislikesCount: number;
   commentsCount: number;
 }
+
+export type PostWithStats = Post & {
+  userReaction: ReactionType | null;
+};
