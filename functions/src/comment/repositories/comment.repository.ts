@@ -52,7 +52,11 @@ export class CommentRepository {
     }
 
     const snapshot = await query.get();
-    return { docs: snapshot.docs.map((doc) => this.mapDoc(doc) as Comment) };
+    return {
+      docs: snapshot.docs
+        .map((doc) => this.mapDoc(doc))
+        .filter((comment): comment is Comment => comment !== null),
+    };
   }
 
   async findReplies(
@@ -71,7 +75,11 @@ export class CommentRepository {
     }
 
     const snapshot = await query.get();
-    return { docs: snapshot.docs.map((doc) => this.mapDoc(doc) as Comment) };
+    return {
+      docs: snapshot.docs
+        .map((doc) => this.mapDoc(doc))
+        .filter((comment): comment is Comment => comment !== null),
+    };
   }
 
   async create(
@@ -91,15 +99,18 @@ export class CommentRepository {
           ...comment,
           createdAt: new Date(),
           updatedAt: new Date(),
-        } as Comment;
+        };
       } else {
         const batch = admin.firestore().batch();
         const parentRef = this.collection.doc(comment.parentId);
         batch.set(newRef, { ...comment, createdAt: now, updatedAt: now });
         batch.update(parentRef, { replyCount: FieldValue.increment(1) });
-        await batch.commit();
         const doc = await newRef.get();
-        return this.mapDoc(doc) as Comment;
+        const mappedDoc = this.mapDoc(doc);
+        if (!mappedDoc) {
+          throw new Error('Failed to retrieve newly created comment');
+        }
+        return mappedDoc;
       }
     }
 
@@ -110,11 +121,15 @@ export class CommentRepository {
         ...comment,
         createdAt: new Date(),
         updatedAt: new Date(),
-      } as Comment;
+      };
     } else {
       await newRef.set({ ...comment, createdAt: now, updatedAt: now });
       const doc = await newRef.get();
-      return this.mapDoc(doc) as Comment;
+      const mappedDoc = this.mapDoc(doc);
+      if (!mappedDoc) {
+        throw new Error('Failed to retrieve newly created comment');
+      }
+      return mappedDoc;
     }
   }
 

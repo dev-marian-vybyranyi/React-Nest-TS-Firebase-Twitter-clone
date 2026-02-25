@@ -19,7 +19,11 @@ export class PostRepository {
     } else {
       await docRef.set(post);
       const doc = await docRef.get();
-      return this.mapDoc(doc) as Post;
+      const mappedDoc = this.mapDoc(doc);
+      if (!mappedDoc) {
+        throw new Error('Failed to retrieve newly created post');
+      }
+      return mappedDoc;
     }
   }
 
@@ -66,7 +70,9 @@ export class PostRepository {
 
     const snapshot = await query.get();
     return {
-      docs: snapshot.docs.map((doc) => this.mapDoc(doc) as Post),
+      docs: snapshot.docs
+        .map((doc) => this.mapDoc(doc))
+        .filter((post): post is Post => post !== null),
     };
   }
 
@@ -109,13 +115,17 @@ export class PostRepository {
 
     const snapshot = await query.get();
     return {
-      docs: snapshot.docs.map((doc) => this.mapDoc(doc) as Post),
+      docs: snapshot.docs
+        .map((doc) => this.mapDoc(doc))
+        .filter((post): post is Post => post !== null),
     };
   }
 
   async findAllByUserId(userId: string): Promise<Post[]> {
     const snapshot = await this.collection.where('userId', '==', userId).get();
-    return snapshot.docs.map((doc) => this.mapDoc(doc) as Post);
+    return snapshot.docs
+      .map((doc) => this.mapDoc(doc))
+      .filter((post): post is Post => post !== null);
   }
 
   async update(

@@ -92,7 +92,10 @@ export class ReactionRepository {
     const doc = transaction
       ? await transaction.get(this.collection.doc(docId))
       : await this.collection.doc(docId).get();
-    return doc.exists ? (doc.data() as ReactionEntity) : null;
+
+    if (!doc.exists) return null;
+    const data = doc.data();
+    return data ? (data as ReactionEntity) : null;
   }
 
   async countByPostAndType(
@@ -117,6 +120,8 @@ export class ReactionRepository {
       .where('postId', 'in', postIds);
 
     const snapshot = await query.get();
-    return snapshot.docs.map((doc) => doc.data() as ReactionEntity);
+    return snapshot.docs
+      .map((doc) => doc.data() as ReactionEntity | undefined)
+      .filter((reaction): reaction is ReactionEntity => reaction !== undefined);
   }
 }
