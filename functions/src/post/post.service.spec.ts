@@ -5,7 +5,7 @@ import { UserRepository } from '../user/repositories/user.repository';
 import { ReactionRepository } from '../reaction/repositories/reaction.repository';
 import { CommentRepository } from '../comment/repositories/comment.repository';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { NotFoundException, ForbiddenException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { User } from '../user/entities/user.entity';
 import { Post } from './entities/post.entity';
 
@@ -92,7 +92,7 @@ describe('PostService', () => {
   });
 
   describe('update', () => {
-    it('should update text when the user is the owner', async () => {
+    it('should update text', async () => {
       postRepository.findOne
         .mockResolvedValue({ id: 'p1', userId: 'owner' } as Post)
         .mockResolvedValue({
@@ -101,42 +101,22 @@ describe('PostService', () => {
           text: 'New content',
         } as Post);
 
-      await service.update('p1', { text: 'New content' }, 'owner');
+      await service.update('p1', { text: 'New content' });
       expect(postRepository.update).toHaveBeenCalledWith(
         'p1',
         expect.objectContaining({ text: 'New content' }),
       );
     });
-
-    it('should block non-owners from updating', async () => {
-      postRepository.findOne.mockResolvedValue({
-        id: 'p1',
-        userId: 'owner',
-      } as Post);
-      await expect(
-        service.update('p1', { text: 'Hacked' }, 'not-owner'),
-      ).rejects.toThrow(ForbiddenException);
-    });
   });
 
   describe('remove', () => {
-    it('should let the owner delete their post', async () => {
+    it('should let the user delete their post', async () => {
       postRepository.findOne.mockResolvedValue({
         id: 'p1',
         userId: 'owner',
       } as Post);
-      await service.remove('p1', 'owner');
+      await service.remove('p1');
       expect(postRepository.delete).toHaveBeenCalledWith('p1');
-    });
-
-    it('should block non-owners from deleting', async () => {
-      postRepository.findOne.mockResolvedValue({
-        id: 'p1',
-        userId: 'owner',
-      } as Post);
-      await expect(service.remove('p1', 'not-owner')).rejects.toThrow(
-        ForbiddenException,
-      );
     });
   });
 });

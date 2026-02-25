@@ -14,6 +14,7 @@ import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { AuthGuard } from '../common/guards/auth.guard';
+import { PostsAuthorizationGuard } from './guards/posts-authorization.guard';
 import { sortOptions } from './repositories/post.repository';
 import { Request as ExpressRequest } from 'express';
 
@@ -74,18 +75,14 @@ export class PostController {
   }
 
   @Patch(':id')
-  @UseGuards(AuthGuard)
-  update(
-    @Param('id') id: string,
-    @Body() updatePostDto: UpdatePostDto,
-    @Request() req: RequestWithUser,
-  ) {
-    return this.postService.update(id, updatePostDto, req.user.uid);
+  @UseGuards(AuthGuard, PostsAuthorizationGuard)
+  update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
+    return this.postService.update(id, updatePostDto);
   }
 
   @Delete(':id')
-  @UseGuards(AuthGuard)
-  remove(@Param('id') id: string, @Request() req: RequestWithUser) {
-    return this.postService.remove(id, req.user.uid);
+  @UseGuards(AuthGuard, PostsAuthorizationGuard)
+  remove(@Param('id') id: string) {
+    return this.postService.remove(id);
   }
 }

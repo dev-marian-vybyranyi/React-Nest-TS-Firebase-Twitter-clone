@@ -6,11 +6,7 @@ import * as admin from 'firebase-admin';
 jest.mock('firebase-admin', () => ({
   firestore: jest.fn(),
 }));
-import {
-  NotFoundException,
-  ForbiddenException,
-  BadRequestException,
-} from '@nestjs/common';
+import { NotFoundException, BadRequestException } from '@nestjs/common';
 
 describe('CommentService', () => {
   let service: CommentService;
@@ -37,7 +33,9 @@ describe('CommentService', () => {
     };
 
     (admin.firestore as unknown as jest.Mock).mockReturnValue({
-      runTransaction: jest.fn().mockImplementation((cb) => cb(mockTransaction)),
+      runTransaction: jest.fn().mockImplementation(async (cb) => {
+        return cb(mockTransaction) as unknown;
+      }),
     });
 
     const module: TestingModule = await Test.createTestingModule({
@@ -105,28 +103,17 @@ describe('CommentService', () => {
   });
 
   describe('update', () => {
-    it('should update comment content if the user is the author', async () => {
+    it('should update comment content', async () => {
       repository.findOne.mockResolvedValue({
         id: '1',
         authorId: 'user1',
         isDeleted: false,
       } as any);
-      await service.update('1', 'user1', 'updated text');
+      await service.update('1', 'updated text');
 
       expect(repository.update).toHaveBeenCalledWith('1', {
         content: 'updated text',
       });
-    });
-
-    it('should throw ForbiddenException if another user tries to edit', async () => {
-      repository.findOne.mockResolvedValue({
-        id: '1',
-        authorId: 'other-user',
-        isDeleted: false,
-      } as any);
-      await expect(
-        service.update('1', 'user1', 'updated text'),
-      ).rejects.toThrow(ForbiddenException);
     });
   });
 
@@ -138,7 +125,7 @@ describe('CommentService', () => {
         replyCount: 0,
         parentId: null,
       } as any);
-      await service.remove('1', 'user1');
+      await service.remove('1');
 
       expect(repository.delete).toHaveBeenCalledWith(
         '1',
@@ -153,7 +140,7 @@ describe('CommentService', () => {
         authorId: 'user1',
         replyCount: 5,
       } as any);
-      await service.remove('1', 'user1');
+      await service.remove('1');
 
       expect(repository.softDelete).toHaveBeenCalledWith(
         '1',

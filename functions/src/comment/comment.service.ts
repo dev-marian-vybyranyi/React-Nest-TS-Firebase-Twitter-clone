@@ -89,16 +89,9 @@ export class CommentService {
     });
   }
 
-  async update(
-    id: string,
-    requesterId: string,
-    content: string,
-  ): Promise<void> {
+  async update(id: string, content: string): Promise<void> {
     const comment = await this.commentRepository.findOne(id);
     if (!comment) throw new NotFoundException('Comment not found');
-    if (comment.authorId !== requesterId) {
-      throw new ForbiddenException('You can only edit your own comments');
-    }
     if (comment.isDeleted) {
       throw new BadRequestException('Cannot edit a deleted comment');
     }
@@ -106,13 +99,10 @@ export class CommentService {
     return this.commentRepository.update(id, { content });
   }
 
-  async remove(id: string, requesterId: string): Promise<void> {
+  async remove(id: string): Promise<void> {
     return admin.firestore().runTransaction(async (transaction) => {
       const comment = await this.commentRepository.findOne(id, transaction);
       if (!comment) throw new NotFoundException('Comment not found');
-      if (comment.authorId !== requesterId) {
-        throw new ForbiddenException('You can only delete your own comments');
-      }
       if (comment.replyCount > 0) {
         return this.commentRepository.softDelete(id, transaction);
       }

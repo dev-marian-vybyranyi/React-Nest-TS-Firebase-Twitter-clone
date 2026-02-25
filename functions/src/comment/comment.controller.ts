@@ -13,6 +13,7 @@ import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { CommentService } from './comment.service';
 import { AuthGuard } from '../common/guards/auth.guard';
+import { CommentsAuthorizationGuard } from './guards/comments-authorization.guard';
 
 @Controller()
 export class CommentController {
@@ -46,22 +47,17 @@ export class CommentController {
   }
 
   @Patch('comments/:id')
+  @UseGuards(AuthGuard, CommentsAuthorizationGuard)
   async update(
     @Param('id') id: string,
     @Body() updateCommentDto: UpdateCommentDto,
   ) {
-    return this.commentService.update(
-      id,
-      updateCommentDto.requesterId,
-      updateCommentDto.content,
-    );
+    return this.commentService.update(id, updateCommentDto.content);
   }
 
   @Delete('comments/:id')
-  async remove(
-    @Param('id') id: string,
-    @Body('requesterId') requesterId: string,
-  ) {
-    return this.commentService.remove(id, requesterId);
+  @UseGuards(AuthGuard, CommentsAuthorizationGuard)
+  async remove(@Param('id') id: string) {
+    return this.commentService.remove(id);
   }
 }

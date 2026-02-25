@@ -1,5 +1,4 @@
 import {
-  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -164,19 +163,11 @@ export class PostService {
     return { posts: postsWithStats, lastDocId: lastDocIdResult, hasMore };
   }
 
-  async update(
-    id: string,
-    updatePostDto: UpdatePostDto,
-    userId: string,
-  ): Promise<Post> {
+  async update(id: string, updatePostDto: UpdatePostDto): Promise<Post> {
     const post = await this.postRepository.findOne(id);
 
     if (!post) {
       throw new NotFoundException('Post not found');
-    }
-
-    if (post.userId !== userId) {
-      throw new ForbiddenException('You can only update your own posts');
     }
 
     const updateData = {
@@ -202,15 +193,11 @@ export class PostService {
     return updatedPost;
   }
 
-  async remove(id: string, userId: string) {
+  async remove(id: string) {
     const post = await this.postRepository.findOne(id);
 
     if (!post) {
       throw new NotFoundException('Post not found');
-    }
-
-    if (post.userId !== userId) {
-      throw new ForbiddenException('You can only delete your own posts');
     }
 
     if (post.photo) {
