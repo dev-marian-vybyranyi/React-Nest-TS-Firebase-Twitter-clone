@@ -10,16 +10,17 @@ jest.mock('firebase-admin', () => ({
       .mockResolvedValue({ uid: 'user-id', email: 'test@test.com' }),
   }),
   firestore: jest.fn().mockReturnValue({
-    runTransaction: jest.fn().mockImplementation((cb) =>
-      cb({
-        get: jest.fn().mockResolvedValue({
-          exists: true,
-          data: () => ({ id: 'post1', text: 'e2e post' }),
-        }),
-        set: jest.fn(),
-        update: jest.fn(),
-        delete: jest.fn(),
-      }),
+    runTransaction: jest.fn().mockImplementation(
+      <T>(cb: (t: any) => Promise<T>): Promise<T> =>
+        cb({
+          get: jest.fn().mockResolvedValue({
+            exists: true,
+            data: () => ({ id: 'post1', text: 'e2e post' }),
+          }),
+          set: jest.fn(),
+          update: jest.fn(),
+          delete: jest.fn(),
+        } as any),
     ),
     collection: jest.fn().mockReturnValue({
       doc: jest.fn().mockReturnValue({

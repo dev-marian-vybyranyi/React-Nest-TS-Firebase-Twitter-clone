@@ -27,7 +27,12 @@ describe('ReactionService', () => {
     };
 
     (admin.firestore as unknown as jest.Mock).mockReturnValue({
-      runTransaction: jest.fn().mockImplementation((cb) => cb(mockTransaction)),
+      runTransaction: jest
+        .fn()
+        .mockImplementation(
+          <T>(cb: (t: any) => Promise<T>): Promise<T> =>
+            cb(mockTransaction as any),
+        ),
     });
 
     const module: TestingModule = await Test.createTestingModule({

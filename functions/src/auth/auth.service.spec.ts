@@ -51,13 +51,14 @@ describe('AuthService', () => {
     }).compile();
 
     (admin.firestore as unknown as jest.Mock).mockReturnValue({
-      runTransaction: jest.fn().mockImplementation((cb) =>
-        cb({
-          get: jest.fn(),
-          set: jest.fn(),
-          update: jest.fn(),
-          delete: jest.fn(),
-        }),
+      runTransaction: jest.fn().mockImplementation(
+        <T>(cb: (t: any) => Promise<T>): Promise<T> =>
+          cb({
+            get: jest.fn(),
+            set: jest.fn(),
+            update: jest.fn(),
+            delete: jest.fn(),
+          } as any),
       ),
     });
 
@@ -122,7 +123,10 @@ describe('AuthService', () => {
       (admin.firestore as unknown as jest.Mock).mockReturnValue({
         runTransaction: jest
           .fn()
-          .mockImplementation((cb) => cb(transactionMock)),
+          .mockImplementation(
+            <T>(cb: (t: any) => Promise<T>): Promise<T> =>
+              cb(transactionMock as any),
+          ),
       });
       (admin.auth as unknown as jest.Mock).mockReturnValue({
         verifyIdToken: jest

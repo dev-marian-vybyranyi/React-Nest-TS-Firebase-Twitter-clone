@@ -38,7 +38,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
           : message,
     };
 
-    if (status === HttpStatus.INTERNAL_SERVER_ERROR) {
+    if (status === (HttpStatus.INTERNAL_SERVER_ERROR as number)) {
       this.logger.error(
         `${request.method} ${request.url}`,
         exception instanceof Error
