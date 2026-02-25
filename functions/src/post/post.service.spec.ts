@@ -74,6 +74,14 @@ describe('PostService', () => {
         }),
       );
     });
+
+    it('should throw NotFoundException if user is not found', async () => {
+      userRepository.findOne.mockResolvedValue(null);
+
+      await expect(
+        service.create({ title: 'Test Title', text: 'T' }, 'user1'),
+      ).rejects.toThrow(NotFoundException);
+    });
   });
 
   describe('findOne', () => {

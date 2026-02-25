@@ -32,13 +32,15 @@ export class PostService {
   async create(createPostDto: CreatePostDto, userId: string): Promise<Post> {
     const userData = await this.userRepository.findOne(userId);
 
-    const user = userData
-      ? {
-          name: userData.name || '',
-          surname: userData.surname || '',
-          photo: userData.photo,
-        }
-      : undefined;
+    if (!userData) {
+      throw new NotFoundException('User not found');
+    }
+
+    const user = {
+      name: userData.name || '',
+      surname: userData.surname || '',
+      photo: userData.photo,
+    };
 
     const now = new Date();
     const postData = {
