@@ -72,13 +72,12 @@ describe('CommentService', () => {
         id: '1',
         content: 'new comment',
       } as any);
-      const result = await service.create(
-        'post1',
-        'user1',
-        'Username',
-        null,
-        'new comment',
-      );
+      const result = await service.create('post1', {
+        postId: 'post1',
+        authorId: 'user1',
+        authorUsername: 'Username',
+        content: 'new comment',
+      });
 
       expect(result).toEqual({ id: '1', content: 'new comment' });
       expect(repository.create).toHaveBeenCalledWith(
@@ -94,7 +93,13 @@ describe('CommentService', () => {
     it('should throw an error if parent comment is not found', async () => {
       repository.findOne.mockResolvedValue(null);
       await expect(
-        service.create('p1', 'u1', 'Name', null, 'text', 'badParentId'),
+        service.create('p1', {
+          postId: 'p1',
+          authorId: 'u1',
+          authorUsername: 'Name',
+          content: 'text',
+          parentId: 'badParentId',
+        }),
       ).rejects.toThrow(NotFoundException);
     });
   });

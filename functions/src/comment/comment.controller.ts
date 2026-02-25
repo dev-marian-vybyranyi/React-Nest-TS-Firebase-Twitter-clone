@@ -42,14 +42,7 @@ export class CommentController {
     @Param('postId') postId: string,
     @Body() createCommentDto: CreateCommentDto,
   ) {
-    return this.commentService.create(
-      postId,
-      createCommentDto.authorId,
-      createCommentDto.authorUsername,
-      createCommentDto.authorPhotoURL || null,
-      createCommentDto.content,
-      createCommentDto.parentId,
-    );
+    return this.commentService.create(postId, createCommentDto);
   }
 
   @Patch('comments/:id')

@@ -44,7 +44,7 @@ export class CommentRepository {
       .where('postId', '==', postId)
       .where('parentId', '==', null)
       .orderBy('createdAt', 'desc')
-      .limit(limit);
+      .limit(limit + 1);
 
     if (lastDocId) {
       const lastDoc = await this.collection.doc(lastDocId).get();
@@ -63,7 +63,7 @@ export class CommentRepository {
     let query = this.collection
       .where('parentId', '==', parentId)
       .orderBy('createdAt', 'asc')
-      .limit(limit);
+      .limit(limit + 1);
 
     if (lastDocId) {
       const lastDoc = await this.collection.doc(lastDocId).get();

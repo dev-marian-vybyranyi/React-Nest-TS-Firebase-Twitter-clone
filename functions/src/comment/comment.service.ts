@@ -7,6 +7,7 @@ import {
 import * as admin from 'firebase-admin';
 import { CommentRepository } from './repositories/comment.repository';
 import { Comment } from './entities/comment.entity';
+import { CreateCommentDto } from './dto/create-comment.dto';
 
 @Injectable()
 export class CommentService {
@@ -20,26 +21,44 @@ export class CommentService {
     postId: string,
     limit: number,
     cursor?: string,
-  ): Promise<{ docs: Comment[] }> {
-    return this.commentRepository.findAll(postId, limit, cursor);
+  ): Promise<{ docs: Comment[]; nextCursor: string | null; hasMore: boolean }> {
+    const { docs } = await this.commentRepository.findAll(
+      postId,
+      limit,
+      cursor,
+    );
+
+    const hasMore = docs.length > limit;
+    const comments = hasMore ? docs.slice(0, -1) : docs;
+    const nextCursor = hasMore ? comments[comments.length - 1].id : null;
+
+    return { docs: comments, nextCursor, hasMore };
   }
 
   async findReplies(
     parentId: string,
     limit: number,
     cursor?: string,
-  ): Promise<{ docs: Comment[] }> {
-    return this.commentRepository.findReplies(parentId, limit, cursor);
+  ): Promise<{ docs: Comment[]; nextCursor: string | null; hasMore: boolean }> {
+    const { docs } = await this.commentRepository.findReplies(
+      parentId,
+      limit,
+      cursor,
+    );
+
+    const hasMore = docs.length > limit;
+    const replies = hasMore ? docs.slice(0, -1) : docs;
+    const nextCursor = hasMore ? replies[replies.length - 1].id : null;
+
+    return { docs: replies, nextCursor, hasMore };
   }
 
   async create(
     postId: string,
-    authorId: string,
-    authorUsername: string,
-    authorPhotoURL: string | null,
-    content: string,
-    parentId?: string,
+    createCommentDto: CreateCommentDto,
   ): Promise<Comment> {
+    const { authorId, authorUsername, authorPhotoURL, content, parentId } =
+      createCommentDto;
     return admin.firestore().runTransaction(async (transaction) => {
       if (parentId) {
         const parent = await this.commentRepository.findOne(
@@ -59,7 +78,7 @@ export class CommentService {
           postId,
           authorId,
           authorUsername,
-          authorPhotoURL,
+          authorPhotoURL: authorPhotoURL || null,
           content,
           parentId: parentId ?? null,
           replyCount: 0,
